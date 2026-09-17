@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "797503405765",
+    "project_id": "dii-library",
+    "storage_bucket": "dii-library.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:797503405765:android:ad0e9cc5583225ca607aac",
+        "android_client_info": {
+          "package_name": "com.mycompany.diilibrary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "797503405765-609b6180c0aa28eivcpba8hoagtkve7o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.diilibrary",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "797503405765-6ftpbvr6124acduhj182141qv628tr49.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCEmWLxLIuW2rZOyBrHXZIn52b9HiEMK6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "797503405765-6ftpbvr6124acduhj182141qv628tr49.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "797503405765-aqos8fotk72fs22u65is7csarqm6cn5c.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.diilibrary"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

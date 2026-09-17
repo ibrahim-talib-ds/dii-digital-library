@@ -1,0 +1,8 @@
+/build/
+/.dart_tool/
+/.flutter-plugins
+/.flutter-plugins-dependencies
+/ios/Pods/
+*.mode1v3
+*.element
+.DS_Store
