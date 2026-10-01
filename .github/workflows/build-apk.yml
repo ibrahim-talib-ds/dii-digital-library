@@ -29,7 +29,7 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build APKs (split per ABI for smaller size)
+      - name: Build APKs (split per ABI)
         run: flutter build apk --release --split-per-abi --no-tree-shake-icons --android-skip-build-dependency-validation
 
       - name: Rename APKs
@@ -56,11 +56,4 @@ jobs:
         with:
           name: dii-library-armeabi-v7a
           path: build/app/outputs/flutter-apk/renamed/dii-library-armeabi-v7a.apk
-          if-no-files-found: warn
-
-      - name: Upload x86_64 APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: dii-library-x86_64
-          path: build/app/outputs/flutter-apk/renamed/dii-library-x86_64.apk
           if-no-files-found: warn
