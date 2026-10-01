@@ -28,7 +28,7 @@ jobs:
       - run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --web-renderer html
+        run: flutter build web --release
 
       - uses: actions/upload-pages-artifact@v3
         with:
