@@ -30,7 +30,7 @@ jobs:
         run: flutter pub get
 
       - name: Build APKs (split per ABI for smaller size)
-        run: flutter build apk --release --split-per-abi --no-tree-shake-icons
+        run: flutter build apk --release --split-per-abi --no-tree-shake-icons --android-skip-build-dependency-validation
 
       - name: Rename APKs
         run: |
