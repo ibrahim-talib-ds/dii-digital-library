@@ -1,38 +1,36 @@
 import 'package:provider/provider.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'auth/firebase_auth/firebase_user_provider.dart';
-import 'auth/firebase_auth/auth_util.dart';
+import 'package:go_router/go_router.dart';
 
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
-import '/custom/role_utils.dart';
-import '/login_page/login_page_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
+  // Try to init Firebase — but never crash on failure
   try {
     await initFirebase();
+    // ignore: avoid_print
+    print('✅ Firebase initialized');
   } catch (e) {
     // ignore: avoid_print
-    print('Firebase init failed: $e');
+    print('❌ Firebase init failed: $e');
   }
 
   try {
     await FlutterFlowTheme.initialize();
   } catch (e) {
     // ignore: avoid_print
-    print('Theme init failed: $e');
+    print('❌ Theme init failed: $e');
   }
 
   final appState = FFAppState();
@@ -40,17 +38,18 @@ void main() async {
     await appState.initializePersistedState();
   } catch (e) {
     // ignore: avoid_print
-    print('AppState init failed: $e');
+    print('❌ AppState init failed: $e');
   }
 
-  runApp(ChangeNotifierProvider(
-    create: (context) => appState,
-    child: MyApp(),
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => appState,
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatefulWidget {
-  // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
 
@@ -68,7 +67,7 @@ class MyAppScrollBehavior extends MaterialScrollBehavior {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.light;  // forced light
+  ThemeMode _themeMode = ThemeMode.light;
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
@@ -87,19 +86,15 @@ class _MyAppState extends State<MyApp> {
           .toList();
   late Stream<BaseAuthUser> userStream;
 
-  final authUserSub = authenticatedUserStream.listen((_) {});
-
   @override
   void initState() {
     super.initState();
-
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
     userStream = diiLibraryFirebaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
       });
-    jwtTokenStream.listen((_) {});
     Future.delayed(
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
@@ -108,13 +103,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    authUserSub.cancel();
-
     super.dispose();
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
-        // Dark mode disabled — always light
         _themeMode = ThemeMode.light;
       });
 
@@ -135,10 +127,10 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: false,
       ),
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         useMaterial3: false,
       ),
-      themeMode: _themeMode,
+      themeMode: ThemeMode.light,
       routerConfig: _router,
     );
   }
