@@ -26,6 +26,8 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
   static const Color kBlue = Color(0xFF0A1E5C);
   static const Color kRed = Color(0xFFDC0F0F);
 
+  static const Color kGreen = Color(0xFF10B981);
+
   String _search = '';
 
   @override
