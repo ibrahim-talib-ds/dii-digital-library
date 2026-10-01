@@ -108,3 +108,4 @@ coverage/
 *.rej
 *.bak.*
 pubspec.lock
+pubspec.lock
