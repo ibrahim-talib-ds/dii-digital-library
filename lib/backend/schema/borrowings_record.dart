@@ -76,7 +76,37 @@ class BorrowingsRecord extends FirestoreRecord {
   String get notes => _notes ?? '';
   bool hasNotes() => _notes != null;
 
+  // "bookCode" field.
+  String? _bookCode;
+  String get bookCode => _bookCode ?? '';
+  bool hasBookCode() => _bookCode != null;
+
+  // "approvedBy" field.
+  String? _approvedBy;
+  String get approvedBy => _approvedBy ?? '';
+  bool hasApprovedBy() => _approvedBy != null;
+
+  // "approvedAt" field.
+  DateTime? _approvedAt;
+  DateTime? get approvedAt => _approvedAt;
+  bool hasApprovedAt() => _approvedAt != null;
+
+  // "requestStatus" field.
+  String? _requestStatus;
+  String get requestStatus => _requestStatus ?? 'pending';
+  bool hasRequestStatus() => _requestStatus != null;
+
+  // "fine" field.
+  double? _fine;
+  double get fine => _fine ?? 0.0;
+  bool hasFine() => _fine != null;
+
   void _initializeFields() {
+    _bookCode = snapshotData['bookCode'] as String?;
+    _approvedBy = snapshotData['approvedBy'] as String?;
+    _approvedAt = snapshotData['approvedAt'] as DateTime?;
+    _requestStatus = snapshotData['requestStatus'] as String?;
+    _fine = castToType<double>(snapshotData['fine']);
     _userId = snapshotData['userId'] as String?;
     _studentNumber = snapshotData['studentNumber'] as String?;
     _userName = snapshotData['userName'] as String?;
@@ -138,6 +168,11 @@ Map<String, dynamic> createBorrowingsRecordData({
   String? status,
   String? receivedBy,
   String? notes,
+  String? bookCode,
+  String? approvedBy,
+  DateTime? approvedAt,
+  String? requestStatus,
+  double? fine,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -153,6 +188,11 @@ Map<String, dynamic> createBorrowingsRecordData({
       'status': status,
       'receivedBy': receivedBy,
       'notes': notes,
+      'bookCode': bookCode,
+      'approvedBy': approvedBy,
+      'approvedAt': approvedAt,
+      'requestStatus': requestStatus,
+      'fine': fine,
     }.withoutNulls,
   );
 
@@ -175,7 +215,12 @@ class BorrowingsRecordDocumentEquality implements Equality<BorrowingsRecord> {
         e1?.returnedAt == e2?.returnedAt &&
         e1?.status == e2?.status &&
         e1?.receivedBy == e2?.receivedBy &&
-        e1?.notes == e2?.notes;
+        e1?.notes == e2?.notes &&
+        e1?.bookCode == e2?.bookCode &&
+        e1?.approvedBy == e2?.approvedBy &&
+        e1?.approvedAt == e2?.approvedAt &&
+        e1?.requestStatus == e2?.requestStatus &&
+        e1?.fine == e2?.fine;
   }
 
   @override
@@ -191,7 +236,12 @@ class BorrowingsRecordDocumentEquality implements Equality<BorrowingsRecord> {
         e?.returnedAt,
         e?.status,
         e?.receivedBy,
-        e?.notes
+        e?.notes,
+        e?.bookCode,
+        e?.approvedBy,
+        e?.approvedAt,
+        e?.requestStatus,
+        e?.fine
       ]);
 
   @override

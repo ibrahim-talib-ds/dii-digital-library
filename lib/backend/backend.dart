@@ -7,7 +7,7 @@ import 'schema/util/firestore_util.dart';
 
 import 'schema/books_record.dart';
 import 'schema/user_record.dart';
-import 'schema/students_record.dart';
+import 'schema/users_record.dart';
 import 'schema/borrowings_record.dart';
 
 export 'dart:async' show StreamSubscription;
@@ -18,8 +18,10 @@ export 'schema/util/firestore_util.dart';
 export 'schema/util/schema_util.dart';
 
 export 'schema/books_record.dart';
+export 'schema/settings_record.dart';
+export 'schema/categories_record.dart';
 export 'schema/user_record.dart';
-export 'schema/students_record.dart';
+export 'schema/users_record.dart';
 export 'schema/borrowings_record.dart';
 
 /// Functions to query BooksRecords (as a Stream and as a Future).
@@ -96,38 +98,38 @@ Future<List<UserRecord>> queryUserRecordOnce({
       singleRecord: singleRecord,
     );
 
-/// Functions to query StudentsRecords (as a Stream and as a Future).
-Future<int> queryStudentsRecordCount({
+/// Functions to query UsersRecords (as a Stream and as a Future).
+Future<int> queryUsersRecordCount({
   Query Function(Query)? queryBuilder,
   int limit = -1,
 }) =>
     queryCollectionCount(
-      StudentsRecord.collection,
+      UsersRecord.collection,
       queryBuilder: queryBuilder,
       limit: limit,
     );
 
-Stream<List<StudentsRecord>> queryStudentsRecord({
+Stream<List<UsersRecord>> queryUsersRecord({
   Query Function(Query)? queryBuilder,
   int limit = -1,
   bool singleRecord = false,
 }) =>
     queryCollection(
-      StudentsRecord.collection,
-      StudentsRecord.fromSnapshot,
+      UsersRecord.collection,
+      UsersRecord.fromSnapshot,
       queryBuilder: queryBuilder,
       limit: limit,
       singleRecord: singleRecord,
     );
 
-Future<List<StudentsRecord>> queryStudentsRecordOnce({
+Future<List<UsersRecord>> queryUsersRecordOnce({
   Query Function(Query)? queryBuilder,
   int limit = -1,
   bool singleRecord = false,
 }) =>
     queryCollectionOnce(
-      StudentsRecord.collection,
-      StudentsRecord.fromSnapshot,
+      UsersRecord.collection,
+      UsersRecord.fromSnapshot,
       queryBuilder: queryBuilder,
       limit: limit,
       singleRecord: singleRecord,

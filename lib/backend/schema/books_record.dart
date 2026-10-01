@@ -116,7 +116,13 @@ class BooksRecord extends FirestoreRecord {
   bool get active => _active ?? false;
   bool hasActive() => _active != null;
 
+  // "bookCode" field.
+  String? _bookCode;
+  String get bookCode => _bookCode ?? '';
+  bool hasBookCode() => _bookCode != null;
+
   void _initializeFields() {
+    _bookCode = snapshotData['bookCode'] as String?;
     _title = snapshotData['title'] as String?;
     _author = snapshotData['author'] as String?;
     _category = snapshotData['category'] as String?;
@@ -194,6 +200,7 @@ Map<String, dynamic> createBooksRecordData({
   int? availableCopies,
   String? status,
   bool? active,
+  String? bookCode,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -217,6 +224,7 @@ Map<String, dynamic> createBooksRecordData({
       'availableCopies': availableCopies,
       'status': status,
       'active': active,
+      'bookCode': bookCode,
     }.withoutNulls,
   );
 
@@ -247,7 +255,8 @@ class BooksRecordDocumentEquality implements Equality<BooksRecord> {
         e1?.totalCopies == e2?.totalCopies &&
         e1?.availableCopies == e2?.availableCopies &&
         e1?.status == e2?.status &&
-        e1?.active == e2?.active;
+        e1?.active == e2?.active &&
+        e1?.bookCode == e2?.bookCode;
   }
 
   @override
@@ -271,7 +280,8 @@ class BooksRecordDocumentEquality implements Equality<BooksRecord> {
         e?.totalCopies,
         e?.availableCopies,
         e?.status,
-        e?.active
+        e?.active,
+        e?.bookCode
       ]);
 
   @override

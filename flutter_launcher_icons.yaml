@@ -1,0 +1,12 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logos/dii_logo.png"
+  adaptive_icon_background: "#0A1E5C"
+  adaptive_icon_foreground: "assets/logos/dii_logo.png"
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/logos/dii_logo.png"
+    background_color: "#0A1E5C"
+    theme_color: "#FFC107"

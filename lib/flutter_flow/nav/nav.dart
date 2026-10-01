@@ -16,6 +16,18 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'serialization_util.dart';
 
 import '/index.dart';
+import '/login_page/login_page_widget.dart';
+import '/my_books/my_books_widget.dart';
+import '/history/history_widget.dart';
+import '/book_details_v2/book_details_v2_widget.dart';
+import '/admin_borrow_requests/admin_borrow_requests_widget.dart';
+import '/librarian_return/librarian_return_widget.dart';
+import '/admin_students/admin_students_widget.dart';
+import '/admin_books/admin_books_widget.dart';
+import '/admin_librarians/admin_librarians_widget.dart';
+import '/admin_dashboard/admin_dashboard_widget.dart';
+import '/librarian_dashboard/librarian_dashboard_widget.dart';
+import '/admin_reports/admin_reports_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -84,19 +96,29 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) => appStateNotifier.loggedIn
           ? HomePageWidget()
-          : ModernAndSimplePageWidget(),
+          : LoginPageWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) => appStateNotifier.loggedIn
               ? HomePageWidget()
-              : ModernAndSimplePageWidget(),
+              : LoginPageWidget(),
         ),
         FFRoute(
           name: LoginPageWidget.routeName,
           path: LoginPageWidget.routePath,
           builder: (context, params) => LoginPageWidget(),
+        ),
+        FFRoute(
+          name: LibrarianDashboardWidget.routeName,
+          path: LibrarianDashboardWidget.routePath,
+          builder: (context, params) => const LibrarianDashboardWidget(),
+        ),
+        FFRoute(
+          name: AdminDashboardWidget.routeName,
+          path: AdminDashboardWidget.routePath,
+          builder: (context, params) => const AdminDashboardWidget(),
         ),
         FFRoute(
           name: SignUpPageWidget.routeName,
@@ -132,6 +154,53 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: HomePageWidget.routeName,
           path: HomePageWidget.routePath,
           builder: (context, params) => HomePageWidget(),
+        ),
+        FFRoute(
+          name: MyBooksWidget.routeName,
+          path: MyBooksWidget.routePath,
+          builder: (context, params) => MyBooksWidget(),
+        ),
+        FFRoute(
+          name: HistoryWidget.routeName,
+          path: HistoryWidget.routePath,
+          builder: (context, params) => HistoryWidget(),
+        ),
+        FFRoute(
+          name: BookDetailsV2Widget.routeName,
+          path: BookDetailsV2Widget.routePath,
+          builder: (context, params) => BookDetailsV2Widget(
+            bookId: params.getParam('bookId', ParamType.String) ?? '',
+          ),
+        ),
+        FFRoute(
+          name: AdminBorrowRequestsWidget.routeName,
+          path: AdminBorrowRequestsWidget.routePath,
+          builder: (context, params) => const AdminBorrowRequestsWidget(),
+        ),
+        FFRoute(
+          name: LibrarianReturnWidget.routeName,
+          path: LibrarianReturnWidget.routePath,
+          builder: (context, params) => const LibrarianReturnWidget(),
+        ),
+        FFRoute(
+          name: AdminStudentsWidget.routeName,
+          path: AdminStudentsWidget.routePath,
+          builder: (context, params) => const AdminStudentsWidget(),
+        ),
+        FFRoute(
+          name: AdminBooksWidget.routeName,
+          path: AdminBooksWidget.routePath,
+          builder: (context, params) => const AdminBooksWidget(),
+        ),
+        FFRoute(
+          name: AdminReportsWidget.routeName,
+          path: AdminReportsWidget.routePath,
+          builder: (context, params) => const AdminReportsWidget(),
+        ),
+        FFRoute(
+          name: AdminLibrariansWidget.routeName,
+          path: AdminLibrariansWidget.routePath,
+          builder: (context, params) => const AdminLibrariansWidget(),
         ),
         FFRoute(
           name: HelpWidget.routeName,
