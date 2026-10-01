@@ -21,12 +21,27 @@ void main() async {
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
-  await initFirebase();
+  try {
+    await initFirebase();
+  } catch (e) {
+    // ignore: avoid_print
+    print('Firebase init failed: $e');
+  }
 
-  await FlutterFlowTheme.initialize();
+  try {
+    await FlutterFlowTheme.initialize();
+  } catch (e) {
+    // ignore: avoid_print
+    print('Theme init failed: $e');
+  }
 
-  final appState = FFAppState(); // Initialize FFAppState
-  await appState.initializePersistedState();
+  final appState = FFAppState();
+  try {
+    await appState.initializePersistedState();
+  } catch (e) {
+    // ignore: avoid_print
+    print('AppState init failed: $e');
+  }
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,
