@@ -64,11 +64,44 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
     }
   }
 
+  // Category presets — dropdown will use these
+  static const List<Map<String, String>> _catPresets = [
+    {
+      'name': 'Computer Science',
+      'code': 'CS-',
+      'flag': 'is_computer_science',
+    },
+    {
+      'name': 'Artificial Intelligence',
+      'code': 'AI-',
+      'flag': 'is_artificial_intelligence',
+    },
+    {
+      'name': 'Biotechnology',
+      'code': 'BT-',
+      'flag': 'is_biotechnology',
+    },
+    {
+      'name': 'Business Data Science',
+      'code': 'DS-',
+      'flag': 'is_business_data_science',
+    },
+    {
+      'name': 'Business Innovation',
+      'code': 'BI-',
+      'flag': 'is_business_innovation',
+    },
+    {
+      'name': 'Mathematics',
+      'code': 'MT-',
+      'flag': 'is_mathematics',
+    },
+  ];
+
   void _showAddEditDialog({DocumentSnapshot? existing}) {
     final data = existing?.data() as Map<String, dynamic>?;
     final titleCtl = TextEditingController(text: (data?['title'] ?? '').toString());
     final authorCtl = TextEditingController(text: (data?['author'] ?? '').toString());
-    final catCtl = TextEditingController(text: (data?['category'] ?? '').toString());
     final codeCtl = TextEditingController(text: (data?['bookCode'] ?? '').toString());
     final coverCtl = TextEditingController(text: (data?['Cover_url'] ?? '').toString());
     final pdfCtl = TextEditingController(text: (data?['pdfUrl'] ?? '').toString());
@@ -78,57 +111,168 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
     final availCtl = TextEditingController(
         text: ((data?['availableCopies'] as num?)?.toInt() ?? 1).toString());
 
+    // Current selected category — pre-fill from existing book
+    String selectedCategory = (data?['category'] ?? 'Computer Science').toString();
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(existing == null ? 'Add Book' : 'Edit Book'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _tf(titleCtl, 'Title'),
-              _tf(authorCtl, 'Author'),
-              _tf(catCtl, 'Category'),
-              _tf(codeCtl, 'Book Code (e.g. CS-024)'),
-              _tf(coverCtl, 'Cover Image URL'),
-              _tf(pdfCtl, 'PDF URL'),
-              _tf(descCtl, 'Description', lines: 3),
-              _tf(totalCtl, 'Total Copies', number: true),
-              _tf(availCtl, 'Available Copies', number: true),
-            ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(existing == null ? 'Add Book' : 'Edit Book',
+              style: GoogleFonts.interTight(
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              )),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ─── Title ───
+                _tf(titleCtl, 'Title'),
+                // ─── Author ───
+                _tf(authorCtl, 'Author'),
+
+                // ─── Category dropdown ───
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: DropdownButtonFormField<String>(
+                    value: selectedCategory,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: _catPresets
+                        .map((c) => DropdownMenuItem<String>(
+                              value: c['name'],
+                              child: Text(c['name'] ?? ''),
+                            ))
+                        .toList(),
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setLocal(() {
+                        selectedCategory = v;
+                        // Auto-fill the code prefix if empty
+                        final preset = _catPresets.firstWhere(
+                            (c) => c['name'] == v,
+                            orElse: () => _catPresets.first);
+                        if (codeCtl.text.trim().isEmpty) {
+                          codeCtl.text = preset['code'] ?? '';
+                        } else {
+                          // Replace existing prefix with new one
+                          final existingCode = codeCtl.text;
+                          final dashIndex = existingCode.indexOf('-');
+                          if (dashIndex > 0) {
+                            codeCtl.text =
+                                (preset['code'] ?? '') +
+                                    existingCode.substring(dashIndex + 1);
+                          } else {
+                            codeCtl.text = preset['code'] ?? '';
+                          }
+                        }
+                      });
+                    },
+                  ),
+                ),
+
+                // ─── Book Code ───
+                _tf(codeCtl, 'Book Code (e.g. CS-024)'),
+                // ─── Cover URL ───
+                _tf(coverCtl, 'Cover Image URL'),
+                // ─── PDF URL ───
+                _tf(pdfCtl, 'PDF URL'),
+                // ─── Description ───
+                _tf(descCtl, 'Description', lines: 3),
+                // ─── Total copies ───
+                _tf(totalCtl, 'Total Copies', number: true),
+                // ─── Available copies ───
+                _tf(availCtl, 'Available Copies', number: true),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: kBlue),
+              onPressed: () async {
+                final title = titleCtl.text.trim();
+                if (title.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Title is required')),
+                  );
+                  return;
+                }
+
+                // ─── Build payload ───
+                final preset = _catPresets.firstWhere(
+                    (c) => c['name'] == selectedCategory,
+                    orElse: () => _catPresets.first);
+
+                final payload = <String, dynamic>{
+                  'title': title,
+                  'author': authorCtl.text.trim(),
+                  'category': selectedCategory,
+                  'bookCode': codeCtl.text.trim(),
+                  'Cover_url': coverCtl.text.trim(),
+                  'pdfUrl': pdfCtl.text.trim(),
+                  'description': descCtl.text.trim(),
+                  'totalCopies': int.tryParse(totalCtl.text) ?? 1,
+                  'availableCopies': int.tryParse(availCtl.text) ?? 1,
+                  'status': 'active',
+                  'active': true,
+                  'is_all': true,
+                  'createdAt': FieldValue.serverTimestamp(),
+                };
+
+                // ─── Set ONLY the correct boolean flag to true, all others false ───
+                for (final c in _catPresets) {
+                  payload[c['flag'] as String] = (c['name'] == selectedCategory);
+                }
+
+                try {
+                  if (existing == null) {
+                    await FirebaseFirestore.instance
+                        .collection('books')
+                        .add(payload);
+                  } else {
+                    await FirebaseFirestore.instance
+                        .collection('books')
+                        .doc(existing.id)
+                        .update(payload);
+                  }
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(existing == null
+                          ? 'Book added to $selectedCategory'
+                          : 'Book updated'),
+                      backgroundColor: kGreen,
+                    ),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed: $e'),
+                      backgroundColor: kRed,
+                    ),
+                  );
+                }
+              },
+              child: Text(existing == null ? 'Add' : 'Save',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  )),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              final payload = {
-                'title': titleCtl.text.trim(),
-                'author': authorCtl.text.trim(),
-                'category': catCtl.text.trim(),
-                'bookCode': codeCtl.text.trim(),
-                'Cover_url': coverCtl.text.trim(),
-                'pdfUrl': pdfCtl.text.trim(),
-                'description': descCtl.text.trim(),
-                'totalCopies': int.tryParse(totalCtl.text) ?? 1,
-                'availableCopies': int.tryParse(availCtl.text) ?? 1,
-                'status': 'active',
-                'active': true,
-                'createdAt': FieldValue.serverTimestamp(),
-              };
-              if (existing == null) {
-                await FirebaseFirestore.instance.collection('books').add(payload);
-              } else {
-                await FirebaseFirestore.instance
-                    .collection('books')
-                    .doc(existing.id)
-                    .update(payload);
-              }
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: Text(existing == null ? 'Add' : 'Save'),
-          ),
-        ],
       ),
     );
   }
