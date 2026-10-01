@@ -1,6 +1,5 @@
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
@@ -11,26 +10,36 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
 
+String? _startupError;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
-  // Try to init Firebase — but never crash on failure
+  // Catch uncaught errors
+  FlutterError.onError = (details) {
+    // ignore: avoid_print
+    print('FLUTTER_ERROR: ${details.exception}');
+    // ignore: avoid_print
+    print(details.stack);
+  };
+
   try {
     await initFirebase();
     // ignore: avoid_print
-    print('✅ Firebase initialized');
-  } catch (e) {
+    print('✅ Firebase OK');
+  } catch (e, st) {
+    _startupError = 'Firebase init failed:\n$e\n\n$st';
     // ignore: avoid_print
-    print('❌ Firebase init failed: $e');
+    print('❌ $_startupError');
   }
 
   try {
     await FlutterFlowTheme.initialize();
   } catch (e) {
     // ignore: avoid_print
-    print('❌ Theme init failed: $e');
+    print('❌ Theme: $e');
   }
 
   final appState = FFAppState();
@@ -38,7 +47,7 @@ void main() async {
     await appState.initializePersistedState();
   } catch (e) {
     // ignore: avoid_print
-    print('❌ AppState init failed: $e');
+    print('❌ AppState: $e');
   }
 
   runApp(
@@ -91,10 +100,17 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-    userStream = diiLibraryFirebaseUserStream()
-      ..listen((user) {
-        _appStateNotifier.update(user);
-      });
+
+    try {
+      userStream = diiLibraryFirebaseUserStream()
+        ..listen((user) {
+          _appStateNotifier.update(user);
+        });
+    } catch (e) {
+      // ignore: avoid_print
+      print('❌ user stream: $e');
+    }
+
     Future.delayed(
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
@@ -112,6 +128,36 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // ─── SHOW STARTUP ERROR ON SCREEN ───
+    if (_startupError != null) {
+      return MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.red.shade50,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('⚠️ Startup Error',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.red)),
+                  const SizedBox(height: 16),
+                  SelectableText(
+                    _startupError!,
+                    style: const TextStyle(
+                        fontSize: 13, fontFamily: 'monospace'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Dii Library',
@@ -122,14 +168,8 @@ class _MyAppState extends State<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
-      ),
+      theme: ThemeData(brightness: Brightness.light, useMaterial3: false),
+      darkTheme: ThemeData(brightness: Brightness.light, useMaterial3: false),
       themeMode: ThemeMode.light,
       routerConfig: _router,
     );
