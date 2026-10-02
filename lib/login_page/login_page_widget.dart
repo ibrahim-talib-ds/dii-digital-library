@@ -133,9 +133,8 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                       Positioned(
                         right: -80, top: -80, bottom: -80, width: 400,
                         child: Opacity(
-                          opacity: 0.1,
-                          child: Image.network(
-                            'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800',
+                          opacity: 0.25,
+                          child: Image.asset('assets/images/library.png',
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                           ),
@@ -201,7 +200,7 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  width: 44, height: 44,
+                                  width: 40, height: 40,
                                   decoration: BoxDecoration(
                                     color: kBlue,
                                     borderRadius: BorderRadius.circular(12),

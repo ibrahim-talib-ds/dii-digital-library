@@ -254,10 +254,9 @@ class _CategoryBooksPageWidgetState extends State<CategoryBooksPageWidget> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: Image.network(
-                      book.coverUrl.isNotEmpty
+                    child: Image.network(book.coverUrl.isNotEmpty
                           ? book.coverUrl
-                          : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400',
+                          : '',
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         color: FlutterFlowTheme.of(context).alternate,

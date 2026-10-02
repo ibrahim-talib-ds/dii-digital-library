@@ -128,7 +128,9 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: BrowseBooksWidget.routeName,
           path: BrowseBooksWidget.routePath,
-          builder: (context, params) => BrowseBooksWidget(),
+          builder: (context, params) => BrowseBooksWidget(
+            filter: params.getParam('filter', ParamType.String),
+          ),
         ),
         FFRoute(
           name: AboutPageWidget.routeName,

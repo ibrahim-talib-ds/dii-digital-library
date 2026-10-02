@@ -12,7 +12,12 @@ import '/custom/book_card.dart';
 export 'browse_books_model.dart';
 
 class BrowseBooksWidget extends StatefulWidget {
-  const BrowseBooksWidget({super.key});
+  const BrowseBooksWidget({
+    super.key,
+    this.filter,
+  });
+
+  final String? filter;
 
   static String routeName = 'BrowseBooks';
   static String routePath = '/browseBooks';
@@ -196,6 +201,12 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
                     );
                   }
                   var books = snap.data!;
+                  // Filter: only available books
+                  if (widget.filter == 'available') {
+                    books = books
+                        .where((b) => b.availableCopies > 0)
+                        .toList();
+                  }
 
                   // Category filter
                   if (_activeCategory != 'All') {
@@ -317,10 +328,9 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: Image.network(
-                      book.coverUrl.isNotEmpty
+                    child: Image.network(book.coverUrl.isNotEmpty
                           ? book.coverUrl
-                          : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400',
+                          : '',
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         color: FlutterFlowTheme.of(context).alternate,

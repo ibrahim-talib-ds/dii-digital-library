@@ -1,9 +1,10 @@
 import 'package:provider/provider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 
+import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'backend/firebase/firebase_config.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
@@ -14,23 +15,18 @@ String? _startupError;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GoRouter.optionURLReflectsImperativeAPIs = true;
-  usePathUrlStrategy();
 
-  // Catch uncaught errors
   FlutterError.onError = (details) {
     // ignore: avoid_print
     print('FLUTTER_ERROR: ${details.exception}');
-    // ignore: avoid_print
-    print(details.stack);
   };
 
   try {
     await initFirebase();
     // ignore: avoid_print
     print('✅ Firebase OK');
-  } catch (e, st) {
-    _startupError = 'Firebase init failed:\n$e\n\n$st';
+  } catch (e) {
+    _startupError = 'Firebase init failed:\n$e';
     // ignore: avoid_print
     print('❌ $_startupError');
   }
@@ -76,24 +72,51 @@ class MyAppScrollBehavior extends MaterialScrollBehavior {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.light;
-
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+
+  late Stream<BaseAuthUser> userStream;
+
+  // ═══════════════════════════════════════════════════════════════
+  // Required by flutter_flow_util.dart
+  // ═══════════════════════════════════════════════════════════════
+
+  ThemeMode _themeMode = ThemeMode.light;
+
+  /// Returns the current route path (ex: '/homePage')
   String getRoute([RouteMatch? routeMatch]) {
-    final RouteMatch lastMatch =
-        routeMatch ?? _router.routerDelegate.currentConfiguration.last;
-    final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
-        ? lastMatch.matches
-        : _router.routerDelegate.currentConfiguration;
-    return matchList.uri.path;
+    try {
+      final RouteMatch lastMatch =
+          routeMatch ?? _router.routerDelegate.currentConfiguration.last;
+      final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
+          ? lastMatch.matches
+          : _router.routerDelegate.currentConfiguration;
+      return matchList.uri.path;
+    } catch (_) {
+      return '';
+    }
   }
 
-  List<String> getRouteStack() =>
-      _router.routerDelegate.currentConfiguration.matches
+  /// Returns the full route stack as a list of paths
+  List<String> getRouteStack() {
+    try {
+      return _router.routerDelegate.currentConfiguration.matches
           .map((e) => getRoute(e))
           .toList();
-  late Stream<BaseAuthUser> userStream;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Called by FlutterFlow when the app theme changes.
+  /// We force light mode.
+  void setThemeMode(ThemeMode mode) {
+    safeSetState(() {
+      _themeMode = ThemeMode.light;
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
 
   @override
   void initState() {
@@ -122,13 +145,8 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  void setThemeMode(ThemeMode mode) => safeSetState(() {
-        _themeMode = ThemeMode.light;
-      });
-
   @override
   Widget build(BuildContext context) {
-    // ─── SHOW STARTUP ERROR ON SCREEN ───
     if (_startupError != null) {
       return MaterialApp(
         home: Scaffold(

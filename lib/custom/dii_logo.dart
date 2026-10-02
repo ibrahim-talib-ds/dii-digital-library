@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 
-/// DII Library logo — use everywhere for consistent branding.
-///
-///   const DiiLogo(size: 40)
+/// DII Library logo — sized for a clean fit.
 class DiiLogo extends StatelessWidget {
   const DiiLogo({
     super.key,
-    this.size = 40,
+    this.size = 32,
     this.rounded = true,
+    this.circular = false,
     this.backgroundColor,
   });
 
   final double size;
   final bool rounded;
+  final bool circular;
   final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
-    final radius = rounded ? BorderRadius.circular(size * 0.22) : null;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: radius,
+        shape: circular ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: circular
+            ? null
+            : (rounded ? BorderRadius.circular(size * 0.24) : null),
       ),
-      clipBehavior: rounded ? Clip.antiAlias : Clip.none,
+      clipBehavior: Clip.antiAlias,
       child: Image.asset(
         'assets/logos/dii_logo.png',
         width: size,
@@ -37,7 +39,7 @@ class DiiLogo extends StatelessWidget {
           child: Icon(
             Icons.menu_book_rounded,
             color: const Color(0xFFFFC107),
-            size: size * 0.55,
+            size: size * 0.5,
           ),
         ),
       ),
@@ -45,18 +47,20 @@ class DiiLogo extends StatelessWidget {
   }
 }
 
-/// Brand row — logo + "DII Library" wordmark
+/// Brand row — logo + "DII Library" wordmark.
 class DiiBrand extends StatelessWidget {
   const DiiBrand({
     super.key,
-    this.logoSize = 36,
-    this.fontSize = 18,
+    this.logoSize = 30,
+    this.fontSize = 16,
     this.light = true,
+    this.circular = false,
   });
 
   final double logoSize;
   final double fontSize;
-  final bool light; // white text on dark bg; navy text on light bg
+  final bool light;
+  final bool circular;
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +68,12 @@ class DiiBrand extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        DiiLogo(size: logoSize),
-        const SizedBox(width: 10),
+        DiiLogo(
+          size: logoSize,
+          circular: circular,
+          backgroundColor: circular ? const Color(0xFF0A1E5C) : null,
+        ),
+        const SizedBox(width: 8),
         RichText(
           text: TextSpan(children: [
             TextSpan(

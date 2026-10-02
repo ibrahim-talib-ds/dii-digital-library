@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'details_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 export 'details_model.dart';
 
 class DetailsWidget extends StatefulWidget {
@@ -105,6 +106,7 @@ class _DetailsWidgetState extends State<DetailsWidget> {
         'userId': currentUserUid,
         'studentNumber': studentNumber,
         'userName': studentName,
+        'userEmail': FirebaseAuth.instance.currentUser?.email ?? '',
         'bookId': widget.books!.id,
         'bookTitle': (book['title'] ?? '').toString(),
         'bookCover': (book['Cover_url'] ?? '').toString(),

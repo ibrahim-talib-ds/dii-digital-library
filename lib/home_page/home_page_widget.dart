@@ -10,6 +10,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -242,13 +243,24 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _hero(context, isPhone, isTablet),
+                    _hero(context, isPhone, isTablet)
+                        .animate()
+                        .fadeIn(duration: 600.ms)
+                        .slideY(begin: -0.1, end: 0, curve: Curves.easeOut),
+
                     const SizedBox(height: 24),
-                    _statsStrip(context, isPhone),
+                    _statsStrip(context, isPhone)
+                        .animate(delay: 200.ms)
+                        .fadeIn(duration: 500.ms)
+                        .slideY(begin: 0.1, end: 0, curve: Curves.easeOut),
+
                     const SizedBox(height: 32),
                     _sectionTitle(context, 'Browse by Category'),
                     const SizedBox(height: 14),
-                    _categoryGrid(context, isPhone, isTablet),
+                    _categoryGrid(context, isPhone, isTablet)
+                        .animate(delay: 400.ms)
+                        .fadeIn(duration: 500.ms),
+
                     const SizedBox(height: 36),
 
                     if (_searchQuery.isNotEmpty)
@@ -366,13 +378,17 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // Decorative background image
+          // ─── Clean, sharp library photo on the right side ───
           Positioned(
-            right: -60, top: -60, bottom: -60, width: 400,
-            child: Opacity(
-              opacity: 0.12,
-              child: Image.network(
-                'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1000',
+            right: 0, top: 0, bottom: 0, width: 320,
+            child: ShaderMask(
+              shaderCallback: (rect) => const LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [Colors.transparent, Colors.black54],
+              ).createShader(rect),
+              blendMode: BlendMode.dstIn,
+              child: Image.asset('assets/images/library.png',
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),
@@ -499,14 +515,59 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               mainAxisSpacing: 10,
               childAspectRatio: isPhone ? 2.6 : 2.4,
               children: [
-                _statCard(context, 'Total Books', '$totalBooks',
-                    Icons.menu_book_rounded, kBlue),
-                _statCard(context, 'Available Now', '$availableBooks',
-                    Icons.check_circle_rounded, kGreen),
-                _statCard(context, 'My Active', '$activeLoans',
-                    Icons.book_rounded, kYellow),
-                _statCard(context, 'Overdue', '$overdue',
-                    Icons.warning_amber_rounded, kRed),
+                // ─── Total Books → Browse all ───
+                _statCard(
+                  context,
+                  'Total Books',
+                  '$totalBooks',
+                  Icons.menu_book_rounded,
+                  kBlue,
+                  onTap: () => context.pushNamed(
+                    BrowseBooksWidget.routeName,
+                  ),
+                ),
+                // ─── Available Now → Browse with available filter ───
+                _statCard(
+                  context,
+                  'Available Now',
+                  '$availableBooks',
+                  Icons.check_circle_rounded,
+                  kGreen,
+                  onTap: () => context.pushNamed(
+                    BrowseBooksWidget.routeName,
+                    queryParameters: {'filter': 'available'},
+                  ),
+                ),
+                // ─── My Active → My Books ───
+                _statCard(
+                  context,
+                  'My Active',
+                  '$activeLoans',
+                  Icons.book_rounded,
+                  kYellow,
+                  onTap: () {
+                    if (!loggedIn) {
+                      context.pushNamed(LoginPageWidget.routeName);
+                    } else {
+                      context.pushNamed(MyBooksWidget.routeName);
+                    }
+                  },
+                ),
+                // ─── Overdue → My Books ───
+                _statCard(
+                  context,
+                  'Overdue',
+                  '$overdue',
+                  Icons.warning_amber_rounded,
+                  kRed,
+                  onTap: () {
+                    if (!loggedIn) {
+                      context.pushNamed(LoginPageWidget.routeName);
+                    } else {
+                      context.pushNamed(MyBooksWidget.routeName);
+                    }
+                  },
+                ),
               ],
             );
           },
@@ -515,49 +576,95 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     );
   }
 
-  Widget _statCard(BuildContext context, String label, String value,
-      IconData icon, Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
+  Widget _statCard(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          Container(
-            width: 42, height: 42,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(icon, color: color, size: 22),
+        splashColor: color.withOpacity(0.12),
+        highlightColor: color.withOpacity(0.06),
+        child: Container(
+          decoration: BoxDecoration(
+            color: FlutterFlowTheme.of(context).secondaryBackground,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: color.withOpacity(0.25), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: color.withOpacity(0.08),
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(value,
-                    style: GoogleFonts.interTight(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: color,
-                    )),
-                Text(label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: FlutterFlowTheme.of(context).secondaryText,
-                    )),
-              ],
-            ),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Colored icon block
+              Container(
+                width: 44, height: 44,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 8,
+                      color: color.withOpacity(0.35),
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 10),
+              // Value + label
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      value,
+                      style: GoogleFonts.interTight(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: color,
+                        height: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color:
+                            FlutterFlowTheme.of(context).secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Chevron indicator
+              if (onTap != null)
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: color.withOpacity(0.5),
+                  size: 12,
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -590,25 +697,25 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   // CATEGORY GRID
   // ═══════════════════════════════════════════════════════════════
   Widget _categoryGrid(BuildContext context, bool isPhone, bool isTablet) {
-    final cols = isPhone ? 2 : (isTablet ? 3 : 3);
+    final cols = isPhone ? 2 : (isTablet ? 3 : 6);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: cols,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: isPhone ? 1.15 : 1.4,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: isPhone ? 1.1 : (isTablet ? 1.15 : 1.05),
       ),
       itemCount: _categories.length,
       itemBuilder: (context, i) {
         final cat = _categories[i];
-        return _categoryCard(context, cat);
+        return _categoryCard(context, cat, isPhone);
       },
     );
   }
 
-  Widget _categoryCard(BuildContext context, Map<String, dynamic> cat) {
+  Widget _categoryCard(BuildContext context, Map<String, dynamic> cat, bool isPhone) {
     final title = (cat['title'] ?? '').toString();
     final icon = cat['icon'] as IconData? ?? Icons.menu_book_rounded;
     final color = cat['color'] as Color? ?? kBlue;
@@ -647,16 +754,16 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   _openCategory(title);
                 }
               },
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
               child: Container(
                 decoration: BoxDecoration(
                   color: kBlue,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: const [
                     BoxShadow(
-                      blurRadius: 8,
+                      blurRadius: 6,
                       color: Color(0x1A000000),
-                      offset: Offset(0, 3),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -665,19 +772,28 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   fit: StackFit.expand,
                   children: [
                     if (imgUrl.isNotEmpty)
-                      Image.network(
-                        imgUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                      ),
+                      imgUrl.startsWith('http')
+                          ? Image.network(
+                              imgUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  const SizedBox.shrink(),
+                            )
+                          : Image.asset(
+                              imgUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  const SizedBox.shrink(),
+                            ),
+                    // dark gradient at bottom for text legibility
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.85),
-                            Colors.black.withOpacity(0.25),
+                            Colors.black.withOpacity(0.8),
+                            Colors.black.withOpacity(0.1),
                           ],
                         ),
                       ),
@@ -685,59 +801,49 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     // Edit badge (only for owner)
                     if (_isOwner)
                       Positioned(
-                        top: 8, right: 8,
+                        top: 6, right: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                              horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             color: kYellow,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.edit_rounded,
-                                  color: kBlue, size: 11),
-                              const SizedBox(width: 3),
-                              Text('EDIT',
-                                  style: GoogleFonts.inter(
-                                    color: kBlue,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.4,
-                                  )),
-                            ],
-                          ),
+                          child: const Icon(Icons.edit_rounded,
+                              color: kBlue, size: 10),
                         ),
                       ),
+                    // Compact content
                     Padding(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 38, height: 38,
+                            width: 30, height: 30,
                             decoration: BoxDecoration(
                               color: color,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Icon(icon, color: Colors.white, size: 20),
+                            child: Icon(icon, color: Colors.white, size: 16),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Text(title,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.interTight(
                                 color: Colors.white,
-                                fontSize: 15,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w800,
+                                height: 1.1,
                               )),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 1),
                           Text('$count ${count == 1 ? 'book' : 'books'}',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.75),
-                                fontSize: 11.5,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w600,
                               )),
                         ],
@@ -757,24 +863,371 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   // BOOK SECTIONS
   // ═══════════════════════════════════════════════════════════════
   Widget _bookSection(BuildContext context, Map<String, dynamic> cat, int cols) {
+    final catKey = cat['key'] as String;
+    final title = cat['title'] as String;
+    final icon = cat['icon'] as IconData? ?? Icons.menu_book_rounded;
+    final color = cat['color'] as Color? ?? kBlue;
+
     return StreamBuilder<List<BooksRecord>>(
       stream: queryBooksRecord(
-        queryBuilder: (q) => q.where(cat['key'] as String, isEqualTo: true),
+        queryBuilder: (q) => q.where(catKey, isEqualTo: true),
       ),
       builder: (context, snap) {
         if (!snap.hasData) return const SizedBox.shrink();
         final books = snap.data!;
         if (books.isEmpty) return const SizedBox.shrink();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle(context, cat['title'] as String),
-            const SizedBox(height: 14),
-            _bookGrid(context, books, cols),
-            const SizedBox(height: 36),
-          ],
+
+        final w = MediaQuery.of(context).size.width;
+        final isPhone = w < 600;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ─── Section header ───
+              _sectionHeader(context, title, icon, color, books.length, isPhone),
+              const SizedBox(height: 16),
+
+              // ─── Horizontal book scroll ───
+              SizedBox(
+                height: isPhone ? 260 : 300,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  itemCount: books.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 14),
+                  itemBuilder: (context, i) => _horizontalBookCard(
+                    context,
+                    books[i],
+                    isPhone: isPhone,
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Beautiful section header with icon, title, count and "See all"
+  // ═══════════════════════════════════════════════════════════════
+  Widget _sectionHeader(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    int count,
+    bool isPhone,
+  ) {
+    return Row(
+      children: [
+        // Colored icon block
+        Container(
+          width: 42, height: 42,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: color.withOpacity(0.35),
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: Colors.white, size: 22),
+        ),
+        const SizedBox(width: 12),
+
+        // Title + count
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.interTight(
+                  fontSize: isPhone ? 17 : 20,
+                  fontWeight: FontWeight.w900,
+                  color: FlutterFlowTheme.of(context).primaryText,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '$count ${count == 1 ? 'book' : 'books'} in this collection',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // "See all" button
+        InkWell(
+          onTap: () => _openCategory(title),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'See all',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.arrow_forward_rounded, color: color, size: 14),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // Beautiful horizontal book card
+  // ═══════════════════════════════════════════════════════════════
+  Widget _horizontalBookCard(
+    BuildContext context,
+    BooksRecord book, {
+    required bool isPhone,
+  }) {
+    final width = isPhone ? 150.0 : 180.0;
+    final total = book.totalCopies;
+    final available = book.availableCopies;
+    final isAvailable = available > 0;
+    final isLow = available > 0 && available <= 2;
+
+    Color badgeColor;
+    IconData badgeIcon;
+    String badgeText;
+    if (!isAvailable) {
+      badgeColor = kRed;
+      badgeIcon = Icons.cancel_rounded;
+      badgeText = 'All out';
+    } else if (isLow) {
+      badgeColor = kYellow;
+      badgeIcon = Icons.access_time_rounded;
+      badgeText = 'Few left';
+    } else {
+      badgeColor = kGreen;
+      badgeIcon = Icons.check_circle_rounded;
+      badgeText = 'Available';
+    }
+
+    return SizedBox(
+      width: width,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () => context.pushNamed(
+            DetailsWidget.routeName,
+            queryParameters: {
+              'books': serializeParam(
+                  book.reference, ParamType.DocumentReference),
+            }.withoutNulls,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          splashColor: kBlue.withOpacity(0.08),
+          highlightColor: kBlue.withOpacity(0.04),
+          child: Container(
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: FlutterFlowTheme.of(context)
+                    .alternate
+                    .withOpacity(0.25),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  blurRadius: 12,
+                  color: Color(0x0F000000),
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ─── Cover with badge ───
+                Expanded(
+                  flex: 6,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: book.coverUrl.isNotEmpty
+                            ? Image.network(
+                                book.coverUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _bookPlaceholder(context),
+                              )
+                            : _bookPlaceholder(context),
+                      ),
+                      // Availability badge
+                      Positioned(
+                        top: 8, left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: badgeColor,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: const [
+                              BoxShadow(
+                                blurRadius: 6,
+                                color: Color(0x33000000),
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(badgeIcon, color: Colors.white, size: 11),
+                              const SizedBox(width: 4),
+                              Text(badgeText,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.3,
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Copies count bottom-left
+                      Positioned(
+                        bottom: 8, left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.75),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$available/$total',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // ─── Title + author + action ───
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(book.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.interTight(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.2,
+                                  color: FlutterFlowTheme.of(context)
+                                      .primaryText,
+                                )),
+                            if (book.author.isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(book.author,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                  )),
+                            ],
+                          ],
+                        ),
+                        // Action button
+                        SizedBox(
+                          width: double.infinity,
+                          child: Container(
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 7),
+                            decoration: BoxDecoration(
+                              gradient: isAvailable
+                                  ? const LinearGradient(
+                                      colors: [kBlue, kDeep],
+                                    )
+                                  : null,
+                              color: !isAvailable ? kRed.withOpacity(0.1) : null,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              isAvailable ? 'View & Borrow' : 'Out of stock',
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.3,
+                                color: isAvailable ? Colors.white : kRed,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bookPlaceholder(BuildContext context) {
+    return Container(
+      color: FlutterFlowTheme.of(context).alternate,
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.menu_book_rounded,
+        size: 44,
+        color: FlutterFlowTheme.of(context).secondaryText,
+      ),
     );
   }
 
@@ -900,16 +1353,21 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               child: Stack(
                 children: [
                   Positioned.fill(
-                    child: Image.network(
-                      book.coverUrl.isNotEmpty
-                          ? book.coverUrl
-                          : 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: FlutterFlowTheme.of(context).alternate,
-                        child: const Icon(Icons.menu_book_rounded, size: 40),
-                      ),
-                    ),
+                    child: book.coverUrl.isNotEmpty
+                        ? Image.network(
+                            book.coverUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: FlutterFlowTheme.of(context).alternate,
+                              child: const Icon(Icons.menu_book_rounded,
+                                  size: 40),
+                            ),
+                          )
+                        : Container(
+                            color: FlutterFlowTheme.of(context).alternate,
+                            child: const Icon(Icons.menu_book_rounded,
+                                size: 40),
+                          ),
                   ),
                   // Availability badge — big, clear
                   Positioned(

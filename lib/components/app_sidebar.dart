@@ -35,11 +35,10 @@ class AppSidebar extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
                 child: Row(
                   children: [
-                    // ─── Use dii_logo.png ───
                     Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
+                      width: 32, height: 32,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
                         color: kYellow,
                       ),
                       clipBehavior: Clip.antiAlias,
@@ -49,7 +48,7 @@ class AppSidebar extends StatelessWidget {
                         errorBuilder: (_, __, ___) => const Icon(
                           Icons.menu_book_rounded,
                           color: kBlue,
-                          size: 22,
+                          size: 18,
                         ),
                       ),
                     ),
@@ -174,9 +173,6 @@ class AppSidebar extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Account strip — reads LIVE from Firestore, wrapped in Material
-// ═══════════════════════════════════════════════════════════════
 class _SidebarAccountStrip extends StatelessWidget {
   const _SidebarAccountStrip();
 
@@ -213,7 +209,6 @@ class _SidebarAccountStrip extends StatelessWidget {
             ? Icons.admin_panel_settings_rounded
             : role == 'librarian' ? Icons.badge_rounded : Icons.school_rounded;
 
-        // ─── Wrapped in Material for InkWell ───
         return Material(
           color: Colors.transparent,
           child: InkWell(

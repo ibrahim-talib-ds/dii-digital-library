@@ -162,9 +162,8 @@ class _SignUpPageWidgetState extends State<SignUpPageWidget> {
                       Positioned(
                         right: -80, top: -80, bottom: -80, width: 400,
                         child: Opacity(
-                          opacity: 0.1,
-                          child: Image.network(
-                            'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800',
+                          opacity: 0.25,
+                          child: Image.asset('assets/images/library.png',
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                           ),
@@ -222,7 +221,7 @@ class _SignUpPageWidgetState extends State<SignUpPageWidget> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  width: 44, height: 44,
+                                  width: 40, height: 40,
                                   decoration: BoxDecoration(
                                     color: kBlue,
                                     borderRadius: BorderRadius.circular(12),
