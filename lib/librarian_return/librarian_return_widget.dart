@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'librarian_return_model.dart';
+import '/custom/student_info_tile.dart';
+import '/custom/role_utils.dart';
 export 'librarian_return_model.dart';
 
 class LibrarianReturnWidget extends StatefulWidget {
@@ -19,6 +21,8 @@ class LibrarianReturnWidget extends StatefulWidget {
 }
 
 class _LibrarianReturnWidgetState extends State<LibrarianReturnWidget> {
+  bool _roleChecked = false;
+
   late LibrarianReturnModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -32,6 +36,10 @@ class _LibrarianReturnWidgetState extends State<LibrarianReturnWidget> {
   @override
   void initState() {
     super.initState();
+    Future.microtask(() async {
+      await loadCurrentUserRole();
+      if (mounted) setState(() => _roleChecked = true);
+    });
     _model = createModel(context, () => LibrarianReturnModel());
   }
 
@@ -81,6 +89,12 @@ class _LibrarianReturnWidgetState extends State<LibrarianReturnWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_roleChecked) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (!(isLibrarianUser() || isAdminUser())) return _accessDenied(context);
     final isDesktop = MediaQuery.of(context).size.width >= 1024;
 
     final body = Scaffold(
@@ -128,6 +142,9 @@ class _LibrarianReturnWidgetState extends State<LibrarianReturnWidget> {
     final cover = (m['bookCover'] ?? '').toString();
     final student = (m['userName'] ?? '').toString();
     final num = (m['studentNumber'] ?? '').toString();
+    final email = (m['userEmail'] ?? '').toString();
+    final dept = (m['userDepartment'] ?? '').toString();
+    final year = castToType<int>(m['userYear']) ?? 0;
     final due = m['dueDate'] is Timestamp
         ? (m['dueDate'] as Timestamp).toDate() : null;
     final overdue = due != null && due.isBefore(DateTime.now());
@@ -178,12 +195,15 @@ class _LibrarianReturnWidgetState extends State<LibrarianReturnWidget> {
                     style: GoogleFonts.interTight(fontSize: 15, fontWeight: FontWeight.w800,
                       color: FlutterFlowTheme.of(context).primaryText)),
                   const SizedBox(height: 8),
-                  Row(children: [
-                    const Icon(Icons.person_rounded, size: 13, color: kBlue),
-                    const SizedBox(width: 4),
-                    Expanded(child: Text('$student · #$num', maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kBlue))),
-                  ]),
+                  const SizedBox(height: 10),
+                  StudentInfoTile(
+                    userId: (m['userId'] ?? '').toString(),
+                    name: student,
+                    studentNumber: num,
+                    email: email,
+                    department: dept,
+                    year: year,
+                  ),
                   if (due != null) ...[
                     const SizedBox(height: 6),
                     Row(children: [
@@ -262,4 +282,47 @@ class _LibrarianReturnWidgetState extends State<LibrarianReturnWidget> {
       ]),
     ),
   );
+
+  // ─── Access denied screen ───
+  Widget _accessDenied(BuildContext context) {
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.lock_outline_rounded, size: 64, color: Colors.red.shade400),
+              const SizedBox(height: 16),
+              Text(
+                'Access Denied',
+                style: GoogleFonts.interTight(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: FlutterFlowTheme.of(context).primaryText,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You do not have permission to view this page.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => context.safePop(),
+                icon: const Icon(Icons.arrow_back_rounded),
+                label: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 }

@@ -66,8 +66,6 @@ class _HistoryWidgetState extends State<HistoryWidget> {
                     fontWeight: FontWeight.w800,
                   )),
             ),
-      bottomNavigationBar:
-          isDesktop ? null : const AppBottomNav(currentRoute: 'History'),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('borrowings')

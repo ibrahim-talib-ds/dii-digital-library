@@ -81,6 +81,7 @@ class AppSidebar extends StatelessWidget {
                       const SizedBox(height: 10),
                       _section('MY LIBRARY'),
                       _link(context, 'My Books', Icons.book_rounded, MyBooksWidget.routeName),
+                      _link(context, 'Saved Books', Icons.bookmark_rounded, SavedBooksWidget.routeName),
                       _link(context, 'History', Icons.history_rounded, HistoryWidget.routeName),
                       _link(context, 'Profile', Icons.person_rounded, ProfilePageWidget.routeName),
                     ],
@@ -94,6 +95,7 @@ class AppSidebar extends StatelessWidget {
                         _link(context, 'Dashboard', Icons.dashboard_rounded, LibrarianDashboardWidget.routeName),
                       _link(context, 'Borrow Requests', Icons.assignment_rounded, AdminBorrowRequestsWidget.routeName),
                       _link(context, 'Receive Return', Icons.assignment_turned_in_rounded, LibrarianReturnWidget.routeName),
+                      _link(context, 'Students', Icons.people_rounded, LibrarianStudentsWidget.routeName),
                       if (isAdminUser()) ...[
                         _link(context, 'Manage Students', Icons.people_rounded, AdminStudentsWidget.routeName),
                         _link(context, 'Manage Books', Icons.library_add_rounded, AdminBooksWidget.routeName),

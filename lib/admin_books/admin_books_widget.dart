@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'admin_books_model.dart';
 import '/components/responsive_shell.dart';
 import '/components/app_sidebar.dart';
+import '/custom/role_utils.dart';
 export 'admin_books_model.dart';
 
 class AdminBooksWidget extends StatefulWidget {
@@ -20,6 +21,8 @@ class AdminBooksWidget extends StatefulWidget {
 }
 
 class _AdminBooksWidgetState extends State<AdminBooksWidget> {
+  bool _roleChecked = false;
+
   late AdminBooksModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -33,6 +36,10 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
   @override
   void initState() {
     super.initState();
+    Future.microtask(() async {
+      await loadCurrentUserRole();
+      if (mounted) setState(() => _roleChecked = true);
+    });
     _model = createModel(context, () => AdminBooksModel());
   }
 
@@ -108,13 +115,13 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
     final coverCtl = TextEditingController(text: (data?['Cover_url'] ?? '').toString());
     final pdfCtl = TextEditingController(text: (data?['pdfUrl'] ?? '').toString());
     final descCtl = TextEditingController(text: (data?['description'] ?? '').toString());
-    final totalCtl = TextEditingController(
-        text: ((data?['totalCopies'] as num?)?.toInt() ?? 1).toString());
-    final availCtl = TextEditingController(
-        text: ((data?['availableCopies'] as num?)?.toInt() ?? 1).toString());
 
     // Current selected category — pre-fill from existing book
     String selectedCategory = (data?['category'] ?? 'Computer Science').toString();
+
+    // Book type — physical / digital / both
+    String selectedBookType = (data?['bookType'] ?? 'both').toString();
+    if (selectedBookType.isEmpty) selectedBookType = 'both';
 
     showDialog(
       context: context,
@@ -179,18 +186,42 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
                   ),
                 ),
 
+                // ─── Book Type dropdown ───
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: DropdownButtonFormField<String>(
+                    value: selectedBookType,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Book Type',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'physical', child: Text('Physical (borrow only)')),
+                      DropdownMenuItem(value: 'digital', child: Text('Digital (read only)')),
+                      DropdownMenuItem(value: 'both', child: Text('Both (borrow + read)')),
+                    ],
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setLocal(() => selectedBookType = v);
+                    },
+                  ),
+                ),
+
                 // ─── Book Code ───
                 _tf(codeCtl, 'Book Code (e.g. CS-024)'),
                 // ─── Cover URL ───
                 _tf(coverCtl, 'Cover Image URL'),
-                // ─── PDF URL ───
-                _tf(pdfCtl, 'PDF URL'),
+
+                // ─── PDF URL — only for digital / both ───
+                if (selectedBookType == 'digital' || selectedBookType == 'both')
+                  _tf(pdfCtl, 'PDF URL (paste a public PDF link)'),
+
                 // ─── Description ───
                 _tf(descCtl, 'Description', lines: 3),
-                // ─── Total copies ───
-                _tf(totalCtl, 'Total Copies', number: true),
-                // ─── Available copies ───
-                _tf(availCtl, 'Available Copies', number: true),
+
+                // Copies handled automatically (default: 3 for physical, 0 for digital)
               ],
             ),
           ),
@@ -215,6 +246,12 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
                     (c) => c['name'] == selectedCategory,
                     orElse: () => _catPresets.first);
 
+                // Auto-set copies based on book type:
+                // - digital  → 0 copies (read-only)
+                // - physical → 1 copy by default
+                // - both     → 1 copy by default
+                final autoCopies = selectedBookType == 'digital' ? 0 : 1;
+
                 final payload = <String, dynamic>{
                   'title': title,
                   'author': authorCtl.text.trim(),
@@ -223,8 +260,9 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
                   'Cover_url': coverCtl.text.trim(),
                   'pdfUrl': pdfCtl.text.trim(),
                   'description': descCtl.text.trim(),
-                  'totalCopies': int.tryParse(totalCtl.text) ?? 1,
-                  'availableCopies': int.tryParse(availCtl.text) ?? 1,
+                  'bookType': selectedBookType,
+                  'totalCopies': autoCopies,
+                  'availableCopies': autoCopies,
                   'status': 'active',
                   'active': true,
                   'is_all': true,
@@ -297,6 +335,12 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_roleChecked) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (!(isLibrarianUser() || isAdminUser())) return _accessDenied(context);
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -464,4 +508,47 @@ class _AdminBooksWidgetState extends State<AdminBooksWidget> {
       ),
     );
   }
+
+  // ─── Access denied screen ───
+  Widget _accessDenied(BuildContext context) {
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.lock_outline_rounded, size: 64, color: Colors.red.shade400),
+              const SizedBox(height: 16),
+              Text(
+                'Access Denied',
+                style: GoogleFonts.interTight(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: FlutterFlowTheme.of(context).primaryText,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You do not have permission to view this page.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => context.safePop(),
+                icon: const Icon(Icons.arrow_back_rounded),
+                label: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 }

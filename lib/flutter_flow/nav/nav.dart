@@ -28,6 +28,8 @@ import '/admin_librarians/admin_librarians_widget.dart';
 import '/admin_dashboard/admin_dashboard_widget.dart';
 import '/librarian_dashboard/librarian_dashboard_widget.dart';
 import '/admin_reports/admin_reports_widget.dart';
+import '/saved_books/saved_books_widget.dart';
+import '/librarian_students/librarian_students_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -158,6 +160,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => HomePageWidget(),
         ),
         FFRoute(
+          name: SavedBooksWidget.routeName,
+          path: SavedBooksWidget.routePath,
+          builder: (context, params) => const SavedBooksWidget(),
+        ),
+        FFRoute(
           name: MyBooksWidget.routeName,
           path: MyBooksWidget.routePath,
           builder: (context, params) => MyBooksWidget(),
@@ -183,6 +190,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: LibrarianReturnWidget.routeName,
           path: LibrarianReturnWidget.routePath,
           builder: (context, params) => const LibrarianReturnWidget(),
+        ),
+        FFRoute(
+          name: LibrarianStudentsWidget.routeName,
+          path: LibrarianStudentsWidget.routePath,
+          builder: (context, params) => const LibrarianStudentsWidget(),
         ),
         FFRoute(
           name: AdminStudentsWidget.routeName,

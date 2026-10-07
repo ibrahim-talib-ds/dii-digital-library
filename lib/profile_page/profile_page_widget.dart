@@ -282,8 +282,6 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                 ),
               ],
             ),
-      bottomNavigationBar:
-          isDesktop ? null : const AppBottomNav(currentRoute: 'ProfilePage'),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

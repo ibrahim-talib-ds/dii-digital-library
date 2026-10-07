@@ -68,7 +68,6 @@ class _ContactWidgetState extends State<ContactWidget> {
               fontWeight: FontWeight.w800,
             )),
       ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: 'Contact'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

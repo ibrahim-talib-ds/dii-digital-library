@@ -1,5 +1,6 @@
 import '/backend/backend.dart';
 import '/components/app_bottom_nav.dart';
+import '/components/app_sidebar.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -30,9 +31,12 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
   late BrowseBooksModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  static const Color kBlue    = Color(0xFF0A1E5C);
-  static const Color kDeep    = Color(0xFF081444);
-  static const Color kYellow  = Color(0xFFFFC107);
+  static const Color kBlue   = Color(0xFF0A1E5C);
+  static const Color kDeep   = Color(0xFF081444);
+  static const Color kYellow = Color(0xFFFFC107);
+  static const Color kGreen  = Color(0xFF10B981);
+  static const Color kRed    = Color(0xFFDC0F0F);
+  static const Color kPurple = Color(0xFF7B1FA2);
 
   final TextEditingController _searchCtl = TextEditingController();
   String _query = '';
@@ -66,74 +70,71 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
     final w = MediaQuery.of(context).size.width;
     final isPhone = w < 600;
     final isTablet = w >= 600 && w < 1024;
-    final cols = isPhone ? 2 : (isTablet ? 3 : 4);
+    final isDesktop = w >= 1024;
+    final cols = isPhone ? 2 : (isTablet ? 4 : 6);
 
-    return Scaffold(
+    final body = Scaffold(
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      appBar: AppBar(
-        backgroundColor: kBlue,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text('Browse Books',
-            style: GoogleFonts.interTight(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            )),
-      ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: 'BrowseBooks'),
+      appBar: isDesktop
+          ? null
+          : AppBar(
+              backgroundColor: kBlue,
+              iconTheme: const IconThemeData(color: Colors.white),
+              title: Text('Browse Books',
+                  style: GoogleFonts.interTight(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  )),
+            ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
-              horizontal: isPhone ? 16 : 24, vertical: 16),
+            horizontal: isPhone ? 14 : (isTablet ? 20 : 28),
+            vertical: 16,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ─── Search bar ───
-              TextField(
-                controller: _searchCtl,
-                onChanged: (v) => setState(() => _query = v.trim()),
-                decoration: InputDecoration(
-                  hintText: 'Search title, author, code or category...',
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  suffixIcon: _query.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded),
-                          onPressed: () {
-                            _searchCtl.clear();
-                            setState(() => _query = '');
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(
-                      color:
-                          FlutterFlowTheme.of(context).alternate.withOpacity(0.3),
-                    ),
+              Container(
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: FlutterFlowTheme.of(context).alternate.withOpacity(0.3),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(
-                      color:
-                          FlutterFlowTheme.of(context).alternate.withOpacity(0.3),
+                ),
+                child: TextField(
+                  controller: _searchCtl,
+                  onChanged: (v) => setState(() => _query = v.trim()),
+                  decoration: InputDecoration(
+                    hintText: 'Search title, author, code, or category...',
+                    hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: FlutterFlowTheme.of(context).secondaryText,
                     ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: kYellow, width: 2),
+                    prefixIcon: const Icon(Icons.search_rounded, color: kBlue),
+                    suffixIcon: _query.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            onPressed: () {
+                              _searchCtl.clear();
+                              setState(() => _query = '');
+                            },
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // ─── Category chips ───
-              _title(context, 'Browse by Category'),
-              const SizedBox(height: 10),
               SizedBox(
-                height: 46,
+                height: 38,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _categories.length,
@@ -145,30 +146,26 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
                     return InkWell(
                       onTap: () => setState(
                           () => _activeCategory = cat['title'] as String),
-                      borderRadius: BorderRadius.circular(23),
+                      borderRadius: BorderRadius.circular(20),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: selected
-                              ? color
-                              : color.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(23),
+                          color: selected ? color : color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: selected
-                                ? color
-                                : color.withOpacity(0.35),
+                            color: selected ? color : color.withOpacity(0.3),
                           ),
                         ),
                         child: Row(
                           children: [
                             Icon(cat['icon'] as IconData,
                                 color: selected ? Colors.white : color,
-                                size: 16),
-                            const SizedBox(width: 6),
+                                size: 14),
+                            const SizedBox(width: 5),
                             Text(cat['title'] as String,
                                 style: GoogleFonts.inter(
-                                  fontSize: 12.5,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                   color: selected ? Colors.white : color,
                                 )),
@@ -179,16 +176,18 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
                   },
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-              // ─── Books ───
-              _title(context, _query.isEmpty
-                  ? (_activeCategory == 'All'
-                      ? 'All Books'
-                      : _activeCategory)
-                  : 'Search Results'),
+              // ─── Section title ───
+              _sectionTitle(
+                context,
+                _query.isEmpty
+                    ? (_activeCategory == 'All' ? 'All Books' : _activeCategory)
+                    : 'Search Results',
+              ),
               const SizedBox(height: 12),
 
+              // ─── Books grid ───
               StreamBuilder<List<BooksRecord>>(
                 stream: queryBooksRecord(),
                 builder: (context, snap) {
@@ -201,12 +200,9 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
                     );
                   }
                   var books = snap.data!;
-                  // Filter: only available books
-                  if (widget.filter == 'available') {
-                    books = books
-                        .where((b) => b.availableCopies > 0)
-                        .toList();
-                  }
+
+                  // Availability filter (from home stat card)
+                  // Availability filter removed (no more copy counts)
 
                   // Category filter
                   if (_activeCategory != 'All') {
@@ -217,7 +213,7 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
                         .toList();
                   }
 
-                  // Text filter
+                  // Text search
                   if (_query.isNotEmpty) {
                     final q = _query.toLowerCase();
                     books = books.where((b) {
@@ -239,10 +235,11 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
                       crossAxisCount: cols,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
-                      childAspectRatio: 0.62,
+                      childAspectRatio: 0.68,
                     ),
                     itemCount: books.length,
-                    itemBuilder: (context, i) => _bookCard(context, books[i]),
+                    itemBuilder: (context, i) =>
+                        _bookCard(context, books[i], isPhone),
                   );
                 },
               ),
@@ -252,21 +249,33 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
         ),
       ),
     );
+
+    if (isDesktop) {
+      return Row(
+        children: [
+          const AppSidebar(currentRoute: 'BrowseBooks'),
+          Expanded(child: body),
+        ],
+      );
+    }
+    return body;
   }
 
   // ═══════════════════════════════════════════════════════════════
-  Widget _title(BuildContext context, String t) {
+  Widget _sectionTitle(BuildContext context, String t) {
     return Row(
       children: [
         Container(
-          width: 4, height: 20,
+          width: 4, height: 18,
           decoration: BoxDecoration(
-              color: kYellow, borderRadius: BorderRadius.circular(2)),
+            color: kYellow,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         Text(t,
             style: GoogleFonts.interTight(
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.w800,
               color: FlutterFlowTheme.of(context).primaryText,
             )),
@@ -279,17 +288,24 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
         ? 'No results for "$q"'
         : (cat != 'All' ? 'No books in "$cat" yet' : 'No books available');
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 40),
+      padding: const EdgeInsets.symmetric(vertical: 60),
       child: Center(
         child: Column(
           children: [
-            Icon(Icons.search_off_rounded,
-                size: 60,
-                color: FlutterFlowTheme.of(context).secondaryText),
-            const SizedBox(height: 12),
+            Container(
+              width: 80, height: 80,
+              decoration: BoxDecoration(
+                color: kBlue.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.search_off_rounded, size: 36, color: kBlue),
+            ),
+            const SizedBox(height: 16),
             Text(msg,
                 textAlign: TextAlign.center,
                 style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                   color: FlutterFlowTheme.of(context).secondaryText,
                 )),
           ],
@@ -298,114 +314,18 @@ class _BrowseBooksWidgetState extends State<BrowseBooksWidget> {
     );
   }
 
-  Widget _bookCard(BuildContext context, BooksRecord book) {
-    final total = book.totalCopies;
-    final available = book.availableCopies;
-    final isAvail = available > 0;
+  Widget _bookCard(BuildContext context, BooksRecord book, bool isPhone) {
+    return BookCard(book: book);
+  }
 
-    return InkWell(
-      onTap: () => context.pushNamed(
-        DetailsWidget.routeName,
-        queryParameters: {
-          'books': serializeParam(book.reference, ParamType.DocumentReference),
-        }.withoutNulls,
-      ),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: FlutterFlowTheme.of(context).alternate.withOpacity(0.25),
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 5,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image.network(book.coverUrl.isNotEmpty
-                          ? book.coverUrl
-                          : '',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: FlutterFlowTheme.of(context).alternate,
-                        child: const Icon(Icons.menu_book_rounded, size: 40),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 6, right: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: isAvail ? kBlue : Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        isAvail ? '$available/$total' : 'OUT',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(book.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.interTight(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color:
-                                  FlutterFlowTheme.of(context).primaryText,
-                            )),
-                        if (book.author.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(book.author,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryText,
-                              )),
-                        ],
-                      ],
-                    ),
-                    if (book.bookCode.isNotEmpty)
-                      Text(book.bookCode,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            color: FlutterFlowTheme.of(context).secondaryText,
-                          )),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+  Widget _placeholder(BuildContext context) {
+    return Container(
+      color: FlutterFlowTheme.of(context).alternate,
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.menu_book_rounded,
+        size: 28,
+        color: FlutterFlowTheme.of(context).secondaryText,
       ),
     );
   }

@@ -3,20 +3,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ─── helpers ───
     function isSignedIn() { return request.auth != null; }
     function uid() { return request.auth.uid; }
 
     function me() {
       return get(/databases/$(database)/documents/users/$(uid())).data;
     }
-    function isAdmin()    { return isSignedIn() && me().role == 'admin'; }
-    function isLibrarian(){ return isSignedIn() && me().role == 'librarian'; }
-    function isStaff()    { return isAdmin() || isLibrarian(); }
 
-    // ─── users ───
+    function myRole() {
+      return isSignedIn() ? me().role : '';
+    }
+
+    function isAdmin()     { return isSignedIn() && myRole() == 'admin'; }
+    function isLibrarian() { return isSignedIn() && myRole() == 'librarian'; }
+    function isStaff()     { return isAdmin() || isLibrarian(); }
+
+    // ═══════════════════════════════════════════════════════════
+    // users
+    // ═══════════════════════════════════════════════════════════
     match /users/{userId} {
       allow read: if isSignedIn() && (uid() == userId || isStaff());
-      allow create: if isSignedIn() && uid() == userId;
+      allow create: if isSignedIn() && (uid() == userId || isAdmin());
       allow update: if isAdmin() ||
         (isSignedIn() && uid() == userId &&
          !request.resource.data.diff(resource.data)
@@ -24,47 +32,70 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ─── books ───
+    // ═══════════════════════════════════════════════════════════
+    // books
+    // ═══════════════════════════════════════════════════════════
     match /books/{bookId} {
       allow read: if isSignedIn();
       allow create, update, delete: if isStaff();
     }
 
-    // ─── categories ───
+    // ═══════════════════════════════════════════════════════════
+    // categories
+    // ═══════════════════════════════════════════════════════════
     match /categories/{catId} {
       allow read: if isSignedIn();
       allow create, update, delete: if isStaff();
     }
 
-    // ─── borrowings ───
+    // ═══════════════════════════════════════════════════════════
+    // category_images
+    // ═══════════════════════════════════════════════════════════
+    match /category_images/{catId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isStaff();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // saved_books  ← NEW — this is what was missing
+    // ═══════════════════════════════════════════════════════════
+    match /saved_books/{docId} {
+      allow read: if isSignedIn() && resource.data.userId == uid();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow delete: if isSignedIn() && resource.data.userId == uid();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // borrowings
+    // ═══════════════════════════════════════════════════════════
     match /borrowings/{borrowId} {
       allow read: if isSignedIn() &&
         (resource.data.userId == uid() || isStaff());
 
       allow create: if isSignedIn() &&
-        request.resource.data.userId == uid();
+        request.resource.data.userId == uid() &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.requestStatus == 'pending';
 
-      allow update: if isStaff() ||
-        (resource.data.userId == uid() &&
-         request.resource.data.diff(resource.data)
-             .affectedKeys().hasOnly(['status','notes']));
+      allow update: if isStaff();
 
-      allow delete: if isAdmin();
+      allow delete: if isSignedIn() &&
+        (isStaff() ||
+         (resource.data.userId == uid() &&
+          resource.data.status == 'pending'));
     }
 
-    // ─── settings ───
+    // ═══════════════════════════════════════════════════════════
+    // settings
+    // ═══════════════════════════════════════════════════════════
     match /settings/{docId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    // ─── category_images ───
-    match /category_images/{catId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    // ─── default deny ───
+    // ═══════════════════════════════════════════════════════════
+    // default deny
+    // ═══════════════════════════════════════════════════════════
     match /{document=**} {
       allow read, write: if false;
     }

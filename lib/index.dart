@@ -36,3 +36,5 @@ export '/admin_librarians/admin_librarians_widget.dart';
 export '/admin_dashboard/admin_dashboard_widget.dart';
 export '/librarian_dashboard/librarian_dashboard_widget.dart';
 export '/admin_reports/admin_reports_widget.dart';
+export '/saved_books/saved_books_widget.dart';
+export '/librarian_students/librarian_students_widget.dart';

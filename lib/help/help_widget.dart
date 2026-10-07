@@ -109,7 +109,6 @@ class _HelpWidgetState extends State<HelpWidget> {
               fontWeight: FontWeight.w800,
             )),
       ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: 'Help'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

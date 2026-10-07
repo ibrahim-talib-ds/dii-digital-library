@@ -121,7 +121,13 @@ class BooksRecord extends FirestoreRecord {
   String get bookCode => _bookCode ?? '';
   bool hasBookCode() => _bookCode != null;
 
+  // "bookType" field.
+  String? _bookType;
+  String get bookType => _bookType ?? 'both';
+  bool hasBookType() => _bookType != null;
+
   void _initializeFields() {
+    _bookType = snapshotData['bookType'] as String?;
     _bookCode = snapshotData['bookCode'] as String?;
     _title = snapshotData['title'] as String?;
     _author = snapshotData['author'] as String?;

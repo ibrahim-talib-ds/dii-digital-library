@@ -68,7 +68,6 @@ class _AboutPageWidgetState extends State<AboutPageWidget> {
               fontWeight: FontWeight.w800,
             )),
       ),
-      bottomNavigationBar: const AppBottomNav(currentRoute: 'About'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

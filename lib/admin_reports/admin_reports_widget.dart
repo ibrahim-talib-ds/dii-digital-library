@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'admin_reports_model.dart';
 import '/components/responsive_shell.dart';
+import '/custom/role_utils.dart';
 export 'admin_reports_model.dart';
 
 class AdminReportsWidget extends StatefulWidget {
@@ -19,6 +20,8 @@ class AdminReportsWidget extends StatefulWidget {
 }
 
 class _AdminReportsWidgetState extends State<AdminReportsWidget> {
+  bool _roleChecked = false;
+
   late AdminReportsModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -32,6 +35,10 @@ class _AdminReportsWidgetState extends State<AdminReportsWidget> {
   @override
   void initState() {
     super.initState();
+    Future.microtask(() async {
+      await loadCurrentUserRole();
+      if (mounted) setState(() => _roleChecked = true);
+    });
     _model = createModel(context, () => AdminReportsModel());
   }
 
@@ -43,6 +50,12 @@ class _AdminReportsWidgetState extends State<AdminReportsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_roleChecked) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (!(isLibrarianUser() || isAdminUser())) return _accessDenied(context);
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
@@ -568,4 +581,47 @@ class _AdminReportsWidgetState extends State<AdminReportsWidget> {
       ),
     );
   }
+
+  // ─── Access denied screen ───
+  Widget _accessDenied(BuildContext context) {
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.lock_outline_rounded, size: 64, color: Colors.red.shade400),
+              const SizedBox(height: 16),
+              Text(
+                'Access Denied',
+                style: GoogleFonts.interTight(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: FlutterFlowTheme.of(context).primaryText,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You do not have permission to view this page.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => context.safePop(),
+                icon: const Icon(Icons.arrow_back_rounded),
+                label: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 }

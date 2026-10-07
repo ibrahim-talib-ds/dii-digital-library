@@ -17,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home_page_model.dart';
 import '/custom/dii_logo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/custom/book_card.dart';
 export 'home_page_model.dart';
 
 class HomePageWidget extends StatefulWidget {
@@ -221,15 +222,13 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     final w = MediaQuery.of(context).size.width;
     final isPhone = w < 600;
     final isTablet = w >= 600 && w < 1024;
-    final cols = isPhone ? 2 : (isTablet ? 3 : 4);
+    final cols = isPhone ? 2 : (isTablet ? 4 : 6);
     final isDesktop = w >= 1024;
 
     final body = Scaffold(
       key: scaffoldKey,
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       appBar: isDesktop ? null : _appBar(context, isPhone),
-      bottomNavigationBar:
-          isDesktop ? null : const AppBottomNav(currentRoute: 'HomePage'),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Center(
@@ -318,11 +317,23 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   InkWell(
                     onTap: () => context.pushNamed(ProfilePageWidget.routeName),
                     borderRadius: BorderRadius.circular(22),
-                    child: UserAvatar(
-                      size: 38,
-                      borderWidth: 2,
-                      borderColor: kYellow,
-                      fallbackName: currentUserDisplayName,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 8,
+                            color: kYellow.withOpacity(0.4),
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: UserAvatar(
+                        size: 40,
+                        borderWidth: 2.5,
+                        borderColor: kYellow,
+                        fallbackName: currentUserDisplayName,
+                      ),
                     ),
                   )
                 else
@@ -363,7 +374,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   // HERO
   // ═══════════════════════════════════════════════════════════════
   Widget _hero(BuildContext context, bool isPhone, bool isTablet) {
-    final h = isPhone ? 200.0 : (isTablet ? 220.0 : 240.0);
+    final h = isPhone ? 200.0 : (isTablet ? 210.0 : 220.0);
     return Container(
       width: double.infinity,
       height: h,
@@ -378,24 +389,36 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // ─── Clean, sharp library photo on the right side ───
+          // ─── Library photo — RIGHT SIDE ONLY ───
           Positioned(
-            right: 0, top: 0, bottom: 0, width: 320,
+            right: 0, top: 0, bottom: 0,
+            width: 340,
             child: ShaderMask(
+              // Fade from transparent (left) to visible (right)
               shaderCallback: (rect) => const LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [Colors.transparent, Colors.black54],
+                colors: [
+                  Colors.transparent,        // left edge — fades into blue
+                  Color(0x33000000),         // 20% dark
+                  Color(0x99000000),         // 60% dark
+                  Color(0xCC000000),         // 80% dark (photo fully visible)
+                ],
+                stops: [0.0, 0.3, 0.7, 1.0],
               ).createShader(rect),
-              blendMode: BlendMode.dstIn,
-              child: Image.asset('assets/images/library.png',
+              blendMode: BlendMode.dstIn,  // ← KEY: shows photo where gradient is OPAQUE
+              child: Image.asset(
+                'assets/images/library.png',
                 fit: BoxFit.cover,
+                alignment: Alignment.center,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           ),
+
+          // ─── Text overlay ───
           Padding(
-            padding: EdgeInsets.all(isPhone ? 20 : 32),
+            padding: EdgeInsets.all(isPhone ? 24 : 36),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -408,19 +431,21 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     fontSize: isPhone ? 22 : 30,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
+                    height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   'Find your next book from our collection',
                   style: TextStyle(
                     fontSize: isPhone ? 13 : 15,
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withOpacity(0.9),
                   ),
                 ),
-                const SizedBox(height: 18),
-                // Search bar
+                const SizedBox(height: 20),
+                // ─── Search bar INSIDE hero ───
                 Container(
+                  constraints: const BoxConstraints(maxWidth: 460),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
@@ -437,8 +462,12 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     onChanged: (v) => setState(() => _searchQuery = v.trim()),
                     decoration: InputDecoration(
                       hintText: 'Search by title, author, or code...',
-                      prefixIcon: const Icon(Icons.search_rounded,
-                          color: kBlue),
+                      hintStyle: TextStyle(
+                        fontSize: 13.5,
+                        color: FlutterFlowTheme.of(context).secondaryText,
+                      ),
+                      prefixIcon:
+                          const Icon(Icons.search_rounded, color: kBlue),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
                               icon: const Icon(Icons.clear_rounded),
@@ -458,6 +487,57 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SEARCH BAR
+  // ═══════════════════════════════════════════════════════════════
+  Widget _searchBar(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: kBlue.withOpacity(0.15),
+          width: 1.5,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            blurRadius: 12,
+            color: Color(0x0A000000),
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchCtl,
+        onChanged: (v) => setState(() => _searchQuery = v.trim()),
+        decoration: InputDecoration(
+          hintText: 'Search books by title, author, code...',
+          hintStyle: TextStyle(
+            fontSize: 14,
+            color: FlutterFlowTheme.of(context).secondaryText,
+          ),
+          prefixIcon: const Icon(Icons.search_rounded, color: kBlue),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded),
+                  onPressed: () {
+                    _searchCtl.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 18),
+        ),
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: FlutterFlowTheme.of(context).primaryText,
+        ),
       ),
     );
   }
@@ -697,15 +777,25 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   // CATEGORY GRID
   // ═══════════════════════════════════════════════════════════════
   Widget _categoryGrid(BuildContext context, bool isPhone, bool isTablet) {
-    final cols = isPhone ? 2 : (isTablet ? 3 : 6);
+    final w = MediaQuery.of(context).size.width;
+    // Fewer columns at each breakpoint so cards stay wide enough
+    final cols = w >= 1400
+        ? 6
+        : w >= 1100
+            ? 4
+            : w >= 800
+                ? 3
+                : 2;
+    // Taller cards on phones so text has room
+    final aspect = isPhone ? 1.9 : 2.2;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: cols,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: isPhone ? 1.1 : (isTablet ? 1.15 : 1.05),
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: aspect,
       ),
       itemCount: _categories.length,
       itemBuilder: (context, i) {
@@ -718,142 +808,128 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   Widget _categoryCard(BuildContext context, Map<String, dynamic> cat, bool isPhone) {
     final title = (cat['title'] ?? '').toString();
     final icon = cat['icon'] as IconData? ?? Icons.menu_book_rounded;
-    final color = cat['color'] as Color? ?? kBlue;
     final key = cat['key'] as String;
-    final defaultImg = (cat['img'] ?? '').toString();
 
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('category_images')
-          .doc(key)
-          .snapshots(),
-      builder: (context, imgSnap) {
-        String imgUrl = defaultImg;
-        if (imgSnap.hasData && imgSnap.data!.exists) {
-          final data = imgSnap.data!.data() as Map<String, dynamic>?;
-          if (data != null && (data['imageUrl'] ?? '').toString().isNotEmpty) {
-            imgUrl = data['imageUrl'].toString();
-          }
-        }
+    return StreamBuilder<List<BooksRecord>>(
+      stream: queryBooksRecord(
+        queryBuilder: (q) => q.where(key, isEqualTo: true),
+      ),
+      builder: (context, snap) {
+        final count = snap.data?.length ?? 0;
 
-        return StreamBuilder<List<BooksRecord>>(
-          stream: queryBooksRecord(
-            queryBuilder: (q) => q.where(key, isEqualTo: true),
-          ),
-          builder: (context, snap) {
-            final count = snap.data?.length ?? 0;
-
-            return InkWell(
-              onLongPress: _isOwner
-                  ? () => _showCategoryOptions(key, title)
-                  : null,
-              onTap: () {
-                if (_isOwner) {
-                  _showCategoryOptions(key, title);
-                } else {
-                  _openCategory(title);
-                }
-              },
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: kBlue,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 6,
-                      color: Color(0x1A000000),
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+        return Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onLongPress: _isOwner
+                ? () => _showCategoryOptions(key, title)
+                : null,
+            onTap: () {
+              if (_isOwner) {
+                _showCategoryOptions(key, title);
+              } else {
+                _openCategory(title);
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            splashColor: kYellow.withOpacity(0.15),
+            child: Container(
+              decoration: BoxDecoration(
+                color: kBlue,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: kYellow.withOpacity(0.3),
+                  width: 1.5,
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (imgUrl.isNotEmpty)
-                      imgUrl.startsWith('http')
-                          ? Image.network(
-                              imgUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  const SizedBox.shrink(),
-                            )
-                          : Image.asset(
-                              imgUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
-                                  const SizedBox.shrink(),
-                            ),
-                    // dark gradient at bottom for text legibility
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.8),
-                            Colors.black.withOpacity(0.1),
-                          ],
-                        ),
-                      ),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 8,
+                    color: Color(0x33000000),
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 10, vertical: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // ─── Icon ───
+                  Container(
+                    width: 32, height: 32,
+                    decoration: BoxDecoration(
+                      color: kYellow,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    // Edit badge (only for owner)
-                    if (_isOwner)
-                      Positioned(
-                        top: 6, right: 6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: kYellow,
-                            borderRadius: BorderRadius.circular(6),
+                    child: Icon(icon, color: kBlue, size: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  // ─── Text ───
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.interTight(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
                           ),
-                          child: const Icon(Icons.edit_rounded,
-                              color: kBlue, size: 10),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$count ${count == 1 ? 'book' : 'books'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: kYellow,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // ─── Right indicator ───
+                  if (_isOwner)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: kYellow,
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                    // Compact content
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            width: 30, height: 30,
-                            decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(icon, color: Colors.white, size: 16),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.interTight(
-                                color: Colors.white,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w800,
-                                height: 1.1,
-                              )),
-                          const SizedBox(height: 1),
-                          Text('$count ${count == 1 ? 'book' : 'books'}',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.75),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
+                          const Icon(Icons.edit_rounded,
+                              color: kBlue, size: 10),
+                          const SizedBox(width: 3),
+                          Text('EDIT',
+                              style: GoogleFonts.inter(
+                                color: kBlue,
+                                fontSize: 8,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.4,
                               )),
                         ],
                       ),
+                    )
+                  else
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: kYellow.withOpacity(0.6),
+                      size: 11,
                     ),
-                  ],
-                ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -891,7 +967,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
               // ─── Horizontal book scroll ───
               SizedBox(
-                height: isPhone ? 260 : 300,
+                height: isPhone ? 250 : 285,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -1014,208 +1090,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     BooksRecord book, {
     required bool isPhone,
   }) {
-    final width = isPhone ? 150.0 : 180.0;
-    final total = book.totalCopies;
-    final available = book.availableCopies;
-    final isAvailable = available > 0;
-    final isLow = available > 0 && available <= 2;
-
-    Color badgeColor;
-    IconData badgeIcon;
-    String badgeText;
-    if (!isAvailable) {
-      badgeColor = kRed;
-      badgeIcon = Icons.cancel_rounded;
-      badgeText = 'All out';
-    } else if (isLow) {
-      badgeColor = kYellow;
-      badgeIcon = Icons.access_time_rounded;
-      badgeText = 'Few left';
-    } else {
-      badgeColor = kGreen;
-      badgeIcon = Icons.check_circle_rounded;
-      badgeText = 'Available';
-    }
-
     return SizedBox(
-      width: width,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: () => context.pushNamed(
-            DetailsWidget.routeName,
-            queryParameters: {
-              'books': serializeParam(
-                  book.reference, ParamType.DocumentReference),
-            }.withoutNulls,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          splashColor: kBlue.withOpacity(0.08),
-          highlightColor: kBlue.withOpacity(0.04),
-          child: Container(
-            decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: FlutterFlowTheme.of(context)
-                    .alternate
-                    .withOpacity(0.25),
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 12,
-                  color: Color(0x0F000000),
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ─── Cover with badge ───
-                Expanded(
-                  flex: 6,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: book.coverUrl.isNotEmpty
-                            ? Image.network(
-                                book.coverUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    _bookPlaceholder(context),
-                              )
-                            : _bookPlaceholder(context),
-                      ),
-                      // Availability badge
-                      Positioned(
-                        top: 8, left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: badgeColor,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: const [
-                              BoxShadow(
-                                blurRadius: 6,
-                                color: Color(0x33000000),
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(badgeIcon, color: Colors.white, size: 11),
-                              const SizedBox(width: 4),
-                              Text(badgeText,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.3,
-                                  )),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Copies count bottom-left
-                      Positioned(
-                        bottom: 8, left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.75),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            '$available/$total',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // ─── Title + author + action ───
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(book.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.interTight(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.2,
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryText,
-                                )),
-                            if (book.author.isNotEmpty) ...[
-                              const SizedBox(height: 3),
-                              Text(book.author,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                                  )),
-                            ],
-                          ],
-                        ),
-                        // Action button
-                        SizedBox(
-                          width: double.infinity,
-                          child: Container(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 7),
-                            decoration: BoxDecoration(
-                              gradient: isAvailable
-                                  ? const LinearGradient(
-                                      colors: [kBlue, kDeep],
-                                    )
-                                  : null,
-                              color: !isAvailable ? kRed.withOpacity(0.1) : null,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              isAvailable ? 'View & Borrow' : 'Out of stock',
-                              style: GoogleFonts.inter(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.3,
-                                color: isAvailable ? Colors.white : kRed,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      width: isPhone ? 145 : 175,
+      child: BookCard(book: book),
     );
   }
 
@@ -1288,9 +1165,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: cols,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
-        childAspectRatio: 0.62,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.68,
       ),
       itemCount: books.length,
       itemBuilder: (context, i) => _bookCard(context, books[i]),
@@ -1298,197 +1175,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   Widget _bookCard(BuildContext context, BooksRecord book) {
-    final total = book.totalCopies;
-    final available = book.availableCopies;
-    final isAvailable = available > 0;
-    final isLow = available > 0 && available <= 2;
-
-    Color badgeColor;
-    IconData badgeIcon;
-    String badgeText;
-    if (!isAvailable) {
-      badgeColor = kRed;
-      badgeIcon = Icons.cancel_rounded;
-      badgeText = 'All out';
-    } else if (isLow) {
-      badgeColor = kYellow;
-      badgeIcon = Icons.access_time_rounded;
-      badgeText = 'Few left';
-    } else {
-      badgeColor = kGreen;
-      badgeIcon = Icons.check_circle_rounded;
-      badgeText = 'Available';
-    }
-
-    return InkWell(
-      onTap: () => context.pushNamed(
-        DetailsWidget.routeName,
-        queryParameters: {
-          'books': serializeParam(book.reference, ParamType.DocumentReference),
-        }.withoutNulls,
-      ),
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: FlutterFlowTheme.of(context).alternate.withOpacity(0.25),
-          ),
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 6,
-              color: Color(0x0A000000),
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ─── Cover + status badge ───
-            Expanded(
-              flex: 5,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: book.coverUrl.isNotEmpty
-                        ? Image.network(
-                            book.coverUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: FlutterFlowTheme.of(context).alternate,
-                              child: const Icon(Icons.menu_book_rounded,
-                                  size: 40),
-                            ),
-                          )
-                        : Container(
-                            color: FlutterFlowTheme.of(context).alternate,
-                            child: const Icon(Icons.menu_book_rounded,
-                                size: 40),
-                          ),
-                  ),
-                  // Availability badge — big, clear
-                  Positioned(
-                    top: 8, left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: const [
-                          BoxShadow(
-                            blurRadius: 4,
-                            color: Color(0x33000000),
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(badgeIcon, color: Colors.white, size: 11),
-                          const SizedBox(width: 4),
-                          Text(badgeText,
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.3,
-                              )),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Copies count
-                  Positioned(
-                    bottom: 8, left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text('$available / $total copies',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w700,
-                          )),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // ─── Title + author ───
-            Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(book.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.interTight(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              height: 1.2,
-                              color:
-                                  FlutterFlowTheme.of(context).primaryText,
-                            )),
-                        if (book.author.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          Text(book.author,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryText,
-                              )),
-                        ],
-                      ],
-                    ),
-                    // Action button
-                    SizedBox(
-                      width: double.infinity,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isAvailable
-                              ? kBlue.withOpacity(0.1)
-                              : kRed.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          isAvailable ? 'View & Borrow' : 'Out of stock',
-                          style: GoogleFonts.inter(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.3,
-                            color: isAvailable ? kBlue : kRed,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return BookCard(book: book);
   }
 
   // ═══════════════════════════════════════════════════════════════

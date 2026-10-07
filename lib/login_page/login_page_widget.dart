@@ -130,13 +130,28 @@ class _LoginPageWidgetState extends State<LoginPageWidget> {
                   ),
                   child: Stack(
                     children: [
-                      Positioned(
-                        right: -80, top: -80, bottom: -80, width: 400,
-                        child: Opacity(
-                          opacity: 0.25,
-                          child: Image.asset('assets/images/library.png',
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      // ─── Full-bleed library photo ───
+                      Positioned.fill(
+                        child: Image.asset(
+                          'assets/images/library.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                      ),
+                      // ─── Gradient overlay — dark on left for text, transparent right ───
+                      Positioned.fill(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Color(0xF20A1E5C),   // solid navy on left (text side)
+                                Color(0xB30A1E5C),   // 70% navy in middle
+                                Color(0x4D0A1E5C),   // 30% navy on right (photo visible)
+                              ],
+                              stops: [0.0, 0.55, 1.0],
+                            ),
                           ),
                         ),
                       ),

@@ -77,8 +77,6 @@ class _MyBooksWidgetState extends State<MyBooksWidget> {
                     fontWeight: FontWeight.w800,
                   )),
             ),
-      bottomNavigationBar:
-          isDesktop ? null : const AppBottomNav(currentRoute: 'MyBooks'),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('borrowings')

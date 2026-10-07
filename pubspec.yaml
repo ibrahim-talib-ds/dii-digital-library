@@ -23,6 +23,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  pdfrx: ^1.0.88
   flutter_localizations:
     sdk: flutter
   flutter_web_plugins:
