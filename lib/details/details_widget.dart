@@ -434,10 +434,10 @@ class _DetailsWidgetState extends State<DetailsWidget> {
                                 ? () => _openReader(title, pdf)
                                 : () => context.pushNamed(
                                     LoginPageWidget.routeName),
-                            icon: const Icon(Icons.chrome_reader_mode_rounded,
+                            icon: const Icon(Icons.open_in_new_rounded,
                                 size: 20),
                             label: Text(
-                              loggedIn ? 'Read Online' : 'Sign in to Read',
+                              loggedIn ? 'Read PDF' : 'Sign in to Read PDF',
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w800,
