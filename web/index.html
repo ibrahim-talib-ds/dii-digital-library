@@ -1,65 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    Alternatively, build your application passing the --base-href parameter
-    specifying the new root path of your web app.
-
-    Fore more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+  <!-- ⚠️ GitHub Pages serves at /dii-digital-library/ — base MUST match -->
+  <base href="/dii-digital-library/">
 
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Dii Library">
+  <title>DII Library — Digital Library for Dushanbe Innovation Institute</title>
+  <meta name="description" content="DII Library is the official digital library of Dushanbe Innovation Institute. Browse books, read online, borrow physical copies, and manage your library account.">
+  <meta name="keywords" content="DII Library, Dushanbe Innovation Institute, DII, university library, digital library, Tajikistan library">
+  <meta name="author" content="Dushanbe Innovation Institute">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0A1E5C">
 
-  
+  <meta property="og:title" content="DII Library — Dushanbe Innovation Institute">
+  <meta property="og:description" content="Official digital library of Dushanbe Innovation Institute.">
+  <meta property="og:image" content="https://ibrahim-talib-ds.github.io/dii-digital-library/assets/images/library.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ibrahim-talib-ds.github.io/dii-digital-library/">
 
-  
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png" />
-
-  <!-- Open Graph & SEO tags -->
-  <meta property="og:title" content="Dii Library" />
-  <meta property="og:description" content="Built with FlutterFlow." />
-  <meta property="og:image" content="https://storage.googleapis.com/flutterflow-prod-hosting/og_splash_gradient.png" /> 
-  <meta name="twitter:title" content="Dii Library" />
-  <meta name="twitter:description" content="Built with FlutterFlow." />
-  <meta name="twitter:image" content="https://storage.googleapis.com/flutterflow-prod-hosting/og_splash_gradient.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-
-  <title> Dii Library </title>
-  <meta name="description" content="Built with FlutterFlow." />
-    
-
-  <!-- Status Bar color in Safari browser (iOS) and PWA -->
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f1f4f8">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)"  content="#1d2428">
-
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="manifest" href="manifest.json">
-  
 </head>
 <body>
-  
-  
-  
-  
-  
-  
-  <script>
-    {{flutter_bootstrap_js}}
-  </script>
+  <div id="loading" style="
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:#0A1E5C; color:white; font-family:sans-serif;
+    flex-direction:column; gap:16px;
+  ">
+    <img src="assets/images/library.png" alt="DII Library" style="width:80px;height:80px;border-radius:16px;object-fit:cover;">
+    <div style="font-size:20px; font-weight:900; letter-spacing:1px;">DII LIBRARY</div>
+    <div style="font-size:13px; opacity:0.75;">Loading…</div>
+  </div>
+
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
