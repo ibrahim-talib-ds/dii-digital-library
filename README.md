@@ -1,225 +1,85 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/ibrahim-talib-ds/dii-digital-library/main/frontend/assets/images/dii_logo.png" alt="DII Library" width="140" />
+
 # DII Digital Library
 
-A modern full-stack library management system for Dushanbe Innovation Institute.
+### A modern full-stack library management system for Dushanbe Innovation Institute
 
-**Browse, request, and manage books — for students, librarians, and admins.**
+Browse, request, and manage books — for students, librarians, and admins.
 
----
+<br />
 
-## Features
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 
-### For Students
-- Login with student number only (auto-maps to @dii.tj)
-- Browse by category — CS, AI, Biotech, Data Science, Business, Math
-- Live search by title, author, or book code
-- Request physical copies — librarian notified instantly
-- Read PDFs in-app with zoom + page navigation
-- Save books for later
-- Track loans and history with overdue warnings
-- Real-time notifications
+[![License: MIT](https://img.shields.io/badge/License-MIT-FFC107?style=for-the-badge)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active-10B981?style=for-the-badge)]()
 
-### For Librarians
-- Approve or reject requests with custom loan duration (1–90 days)
-- Message students in-app
-- Manage inventory (add / edit / soft-delete)
-- Receive returns with auto-inventory update
-- View student profiles with full borrow history
-- Block / unblock students
+<br />
 
-### For Admins
-- Complete user management
-- Reports dashboard — books, users, loans, overdue, popular
-- Roster management for pre-registered students
-- Librarian self-signup
+[Features](#-features) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [API](#-api-reference) · [Team](#-team)
 
-### AI Assistant — Ibro_Ai
-- Powered by Groq + Llama 3.3 70B
-- Answers library questions, explains rules
-- Floating button on every page
-- Conversation history persisted
+</div>
 
 ---
 
-## Architecture
+## 📖 Overview
 
-Flutter Web  ->  FastAPI  ->  PostgreSQL
-(student UI)    (backend)    (data)
-                + SSE
-                + Groq AI
+**DII Digital Library** replaces a paper-based workflow at Dushanbe Innovation Institute with a modern, responsive web application. Students browse and request books from a curated catalogue; librarians manage inventory and approve requests in real-time; admins oversee users, roles, and analytics.
 
-### Tech Stack
+The system is built around **three principles**:
 
-| Layer | Technology |
+- 🎯 **Simplicity** — students log in with a student number only, no email required
+- ⚡ **Real-time** — notifications, chat, and inventory updates sync instantly across clients
+- 🎨 **Design first** — a disciplined 3-color palette, responsive layouts, and a clean UX across mobile, tablet, and desktop
+
+---
+
+## ✨ Features
+
+### 🎓 For Students
+
+| Feature | Description |
 |---|---|
-| Frontend | Flutter 3.47 Web |
-| State | Provider + ChangeNotifier |
-| Routing | go_router 18 |
-| Backend | FastAPI 0.115 |
-| ORM | SQLModel |
-| Migrations | Alembic |
-| Database | PostgreSQL 17 |
-| Auth | JWT (access + refresh) |
-| Password | bcrypt (12 rounds) |
-| Notifications | Server-Sent Events |
-| AI | Groq + Llama 3.3 70B |
-| Deploy | Fly.io + GitHub Pages |
+| **Passwordless onboarding** | Login with your student number — the system auto-maps to `@dii.tj` |
+| **3-step signup** | Enter number → confirm identity → set password |
+| **Browse by category** | 6 categories with live book counts |
+| **Advanced search** | Filter by title, author, book code, or availability |
+| **Request physical copies** | Librarians get notified instantly |
+| **Read PDFs in-app** | Zoom, page navigation, dark mode |
+| **Save books** | Personal bookmark list |
+| **Loan tracking** | Active loans, due dates, overdue warnings |
+| **Real-time notifications** | Bell badge updates via SSE |
+| **Chat with librarian** | Reply to messages about specific requests |
+
+### 👨‍🏫 For Librarians
+
+- **Approve or reject requests** — with custom loan duration (1–90 days)
+- **Message students** — in-app conversations tied to books
+- **Manage inventory** — add, edit, soft-delete with full metadata
+- **Receive returns** — inventory updates automatically
+- **View student profiles** — full borrow history at a glance
+- **Block / unblock students** — with one-click toggle
+
+### 👨‍💼 For Admins
+
+- **Complete user management** — filter by role, block, unblock
+- **Reports dashboard** — books, users, active loans, overdue, popular titles
+- **Roster management** — bulk pre-register students for signup
+- **Librarian self-signup** — staff can register with their own credentials
+
+### 🤖 AI Assistant — Ibro_Ai
+
+Powered by **Groq + Llama 3.3 70B**, available on every page via a floating button.
+
+- Answers library questions in natural language
+- Explains borrowing rules and availability
+- Suggests books by topic
+- Persists conversation history per user
 
 ---
 
-## Project Structure
-
-DII_Library_v2/
-  backend/              FastAPI application
-    app/
-      main.py
-      config.py
-      database.py
-      models/           10 SQLModel tables
-      schemas/          Pydantic
-      routers/          8 API routers
-      auth/             JWT, bcrypt
-    alembic/            Migrations
-    pyproject.toml
-  frontend/             Flutter Web app
-    lib/
-      core/
-      data/
-      state/
-      ui/
-      router/
-    pubspec.yaml
-  docs/                 Architecture + plans
-  README.md
-
----
-
-## Quick Start
-
-### Prerequisites
-- Python 3.12+
-- PostgreSQL 17
-- Flutter 3.47+
-
-### 1. Clone
-git clone https://github.com/YOUR-USERNAME/dii-digital-library.git
-cd dii-digital-library
-
-### 2. Backend
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-cp .env.example .env
-
-Then edit .env: DATABASE_URL + JWT_SECRET + GROQ_API_KEY
-
-Create the database:
-createdb dii_library
-alembic upgrade head
-
-Run:
-uvicorn app.main:app --port 8002
-
-- API: http://localhost:8002
-- Swagger: http://localhost:8002/docs
-
-### 3. Frontend
-cd frontend
-flutter pub get
-flutter run -d web-server --web-port=5050
-
-Open http://localhost:5050
-
-### 4. Test accounts
-
-| Role | Student # | Password |
-|---|---|---|
-| Admin | 240023018 | 1542004ibrahim |
-| Student | 240023001 | test1234 |
-
----
-
-## API Reference
-
-See docs/02_API_ENDPOINTS.md for the full list.
-
-| Area | Endpoints |
-|---|---|
-| Auth | signup, login, refresh, logout, librarian-signup, roster lookup |
-| Books | CRUD, search, filters, saved list |
-| Categories | CRUD |
-| Borrowings | request, approve, reject, return |
-| Notifications | list, mark read, SSE stream |
-| Messages | inbox, thread, send |
-| Users | list, filter, block, unblock, message |
-| Reports | summary, overdue, popular |
-| AI | POST /ai/chat (Ibro_Ai) |
-
-Live docs: http://localhost:8002/docs
-
----
-
-## Design System
-
-Strict 3-color palette.
-
-| Color | Hex | Usage |
-|---|---|---|
-| Dark Blue | #0A1E5C | Primary |
-| Deep Blue | #061436 | Gradients |
-| Yellow | #FFC107 | Accent |
-| White | #FFFFFF | Surfaces |
-| Danger Red | #B3261E | Overdue only |
-
-Typography: Inter + InterTight
-Breakpoints: Phone <600, Tablet 600-1024, Desktop >=1024
-
----
-
-## Testing
-
-Backend end-to-end test (25 checks):
-python3 /tmp/test_student_librarian.py
-
-Frontend type check:
-cd frontend && flutter analyze lib/
-
----
-
-## Roadmap
-
-### Done
-- JWT auth with refresh
-- Role-based access (student / librarian / admin)
-- Full borrow lifecycle
-- In-app messaging
-- Real-time notifications (SSE)
-- PDF reader with controls
-- Saved books
-- AI assistant (Ibro_Ai)
-- Responsive design
-
-### Planned
-- Deploy to Fly.io
-- GitHub Pages hosting
-- Email notifications
-- Book reviews
-- QR code scanner
-- Mobile APK build
-
----
-
-## Team
-
-| Name | Student # | Role |
-|---|---|---|
-| **Ibrahim Talib Khatib** | 240023018 | Full-stack, Backend, AI |
-| **Muhammadjon Khakimov** | 240023015 | Flutter UI |
-| **Muhammadyusuf Bozorov** | 240023010 | Backend + Database |
-
----
-
-## License
-
-MIT (c) 2026 Dushanbe Innovation Institute
-
+## 🏗️ Architecture
