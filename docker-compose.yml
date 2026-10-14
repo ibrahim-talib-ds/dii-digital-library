@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dii_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dii
+      POSTGRES_PASSWORD: dii
+      POSTGRES_DB: dii_library
+    ports:
+      - "5432:5432"
+    volumes:
+      - dii_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dii"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    container_name: dii_adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+
+volumes:
+  dii_pgdata:
