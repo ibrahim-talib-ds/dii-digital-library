@@ -124,5 +124,10 @@ Powered by **Groq + Llama 3.3 70B**, available on every page via a floating butt
 git clone https://github.com/ibrahim-talib-ds/dii-digital-library.git
 cd dii-digital-library
 
+Terminal 1
 
+cd ~/Projects/DII_Library_v2/backend && source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8002
 
+Terminal 2
+
+cd ~/Projects/DII_Library_v2/frontend/build/web && python3 -m http.server 8080 --bind 0.0.0.0
