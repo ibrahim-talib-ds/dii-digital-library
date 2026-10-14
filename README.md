@@ -83,3 +83,46 @@ Powered by **Groq + Llama 3.3 70B**, available on every page via a floating butt
 ---
 
 ## 🏗️ Architecture
+
+
+### 🧰 Tech Stack
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| **Frontend** | Flutter 3.47 Web | Single codebase for web + Android |
+| **State** | Provider + ChangeNotifier | Simple, low-ceremony state management |
+| **Routing** | go_router 18 | Declarative navigation with auth guards |
+| **Backend** | FastAPI 0.115 | Async, typed, self-documenting |
+| **ORM** | SQLModel | SQLAlchemy + Pydantic in one class |
+| **Migrations** | Alembic | Version-controlled schema |
+| **Database** | PostgreSQL 17 | Real SQL with joins, indexes, triggers |
+| **Auth** | JWT (access + refresh) | Stateless, web-safe |
+| **Passwords** | bcrypt (12 rounds) | Industry standard |
+| **Notifications** | Server-Sent Events | Real-time without polling |
+| **AI** | Groq + Llama 3.3 70B | Free tier, blazing fast |
+| **Deploy** | Fly.io + GitHub Pages | 100% free tier |
+
+---
+
+## 📁 Project Structure
+
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Python** 3.12 or newer
+- **PostgreSQL** 17
+- **Flutter** 3.47 or newer
+- *(Optional)* **Groq API key** — [get one free](https://console.groq.com/keys)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/ibrahim-talib-ds/dii-digital-library.git
+cd dii-digital-library
+
+
+
