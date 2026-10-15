@@ -128,8 +128,9 @@ Terminal 1
 
 cd ~/Projects/DII_Library_v2/backend && source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8002
 
-http://<your-ip>:8080
-
 Terminal 2
 
 cd ~/Projects/DII_Library_v2/frontend/build/web && python3 -m http.server 8080 --bind 0.0.0.0
+
+
+http://localhost:8080
