@@ -19,6 +19,7 @@ import '../ui/pages/ai_chat_page.dart';
 import '../ui/pages/chat_thread_page.dart';
 import '../ui/pages/messages_page.dart';
 import '../ui/pages/librarian/borrow_requests_page.dart';
+import '../ui/pages/librarian/issue_book_page.dart';
 import '../ui/pages/librarian/receive_return_page.dart';
 import '../ui/pages/librarian/manage_books_page.dart';
 import '../ui/pages/librarian/students_page.dart';
@@ -123,6 +124,10 @@ class AppRouter {
       GoRoute(
         path: DiiRoutes.notifications,
         builder: (_, __) => const PlaceholderPage(title: 'Notifications'),
+      ),
+      GoRoute(
+        path: '/issue-book',
+        builder: (_, __) => const IssueBookPage(),
       ),
       GoRoute(
         path: DiiRoutes.borrowRequests,

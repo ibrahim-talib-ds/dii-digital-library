@@ -247,7 +247,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
                 children: [
                   _breadcrumb(),
                   const SizedBox(height: 20),
-                  isPhone
+                  (isPhone || isTablet)
                       ? _phoneLayout(book)
                       : _wideLayout(book, isTablet),
                   const SizedBox(height: 40),

@@ -13,6 +13,15 @@ from app.schemas import BorrowingIn, BorrowingOut, ApproveIn, BorrowingListOut
 from app.auth.deps import CurrentUser, StaffUser
 
 
+from pydantic import BaseModel, Field
+
+class IssueIn(BaseModel):
+    student_number: str = Field(min_length=4, max_length=20)
+    book_code: str = Field(min_length=2, max_length=40)
+    days: int = Field(default=14, ge=1, le=90)
+    notes: Optional[str] = None
+
+
 router = APIRouter(prefix="/borrowings", tags=["borrowings"])
 
 
@@ -282,3 +291,93 @@ def mark_returned(
     session.commit()
     session.refresh(b)
     return _hydrate(session, b)
+
+# ═══════════════════════════════════════════════════════════════
+# POST /borrowings/issue — staff issues a book directly at counter
+# ═══════════════════════════════════════════════════════════════
+@router.post("/issue", response_model=BorrowingOut,
+             status_code=status.HTTP_201_CREATED)
+def issue_book(
+    body: IssueIn,
+    session: Annotated[Session, Depends(get_session)],
+    staff: StaffUser,
+):
+    # 1) find student
+    student = session.exec(
+        select(User).where(
+            (User.student_number == body.student_number) &
+            (User.role == UserRole.student)
+        )
+    ).first()
+    if not student:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            "Student not found")
+
+    # 2) find book by code
+    book = session.exec(
+        select(Book).where(
+            (Book.book_code == body.book_code) &
+            (Book.deleted_at.is_(None))
+        )
+    ).first()
+    if not book:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            "Book not found")
+
+    # 3) availability
+    if book.available_copies <= 0:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            "No copies available")
+
+    # 4) student has no active loan for this book
+    dup = session.exec(
+        select(Borrowing).where(
+            Borrowing.user_id == student.id,
+            Borrowing.book_id == book.id,
+            Borrowing.status.in_([BorrowStatus.approved, BorrowStatus.overdue]),
+        )
+    ).first()
+    if dup:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            "Student already has this book")
+
+    # 5) borrow limit
+    active = session.exec(
+        select(func.count()).select_from(Borrowing).where(
+            Borrowing.user_id == student.id,
+            Borrowing.status.in_([BorrowStatus.approved, BorrowStatus.overdue]),
+        )
+    ).one()
+    if active >= student.borrow_limit:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            f"Student at borrow limit ({student.borrow_limit})")
+
+    # 6) create active loan directly
+    now = datetime.now(timezone.utc)
+    b = Borrowing(
+        user_id=student.id,
+        book_id=book.id,
+        status=BorrowStatus.approved,
+        days=body.days,
+        approved_at=now,
+        approved_by=staff.id,
+        due_at=now + timedelta(days=body.days),
+        notes=body.notes,
+    )
+    book.available_copies -= 1
+    session.add(b)
+    session.add(book)
+    session.flush()
+
+    # 7) notify student
+    _notify(
+        session, student.id, NotificationType.approved,
+        "Book issued",
+        f'"{book.title}" issued to you at the counter — due in {body.days} days',
+        related_id=b.id,
+    )
+
+    session.commit()
+    session.refresh(b)
+    return _hydrate(session, b)
+

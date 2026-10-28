@@ -5,6 +5,38 @@ import '../models/borrowing.dart';
 
 class BorrowingsRepository {
   BorrowingsRepository(this._client);
+  Future<Result<void>> remind(String id) async {
+    try {
+      await _client.post('/borrowings/$id/remind');
+      return const Ok(null);
+    } on ApiException catch (e) {
+      return Err(e);
+    } catch (e) {
+      return Err(ApiException(ApiErrorKind.unknown, e.toString()));
+    }
+  }
+
+  Future<Result<Borrowing>> issue({
+    required String studentNumber,
+    required String bookCode,
+    required int days,
+    String? notes,
+  }) async {
+    try {
+      final data = await _client.post('/borrowings/issue', body: {
+        'student_number': studentNumber,
+        'book_code': bookCode,
+        'days': days,
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+      });
+      return Ok(Borrowing.fromJson(data as Map<String, dynamic>));
+    } on ApiException catch (e) {
+      return Err(e);
+    } catch (e) {
+      return Err(ApiException(ApiErrorKind.unknown, e.toString()));
+    }
+  }
+
   final ApiClient _client;
 
   /// Student: request a book.

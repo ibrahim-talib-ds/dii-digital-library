@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+import httpx
+from fastapi.responses import StreamingResponse
 from sqlalchemy import or_, func
 from sqlmodel import Session, select
 
@@ -275,4 +277,18 @@ def unsave_book(
         session.delete(existing)
         session.commit()
     return {"ok": True, "saved": False}
+
+# ═══════════════════════════════════════════════════════════════
+# GET /books/proxy-pdf — Bypass CORS for external PDFs
+# ═══════════════════════════════════════════════════════════════
+@router.get("/proxy-pdf")
+async def proxy_pdf(url: str):
+    async def stream_pdf():
+        async with httpx.AsyncClient() as client:
+            async with client.stream("GET", url, follow_redirects=True) as response:
+                response.raise_for_status()
+                async for chunk in response.aiter_bytes():
+                    yield chunk
+                    
+    return StreamingResponse(stream_pdf(), media_type="application/pdf")
 

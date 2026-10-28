@@ -38,6 +38,7 @@ class AppSidebar extends StatelessWidget {
   ];
 
   static final List<_NavItem> _staffItems = [
+    _NavItem('Issue Book',   Icons.add_circle_outline_rounded, '/issue-book'),
     _NavItem('Requests',     Icons.inbox_rounded,          DiiRoutes.borrowRequests),
     _NavItem('Returns',      Icons.assignment_return_rounded, DiiRoutes.receiveReturn),
     _NavItem('Manage Books', Icons.edit_note_rounded,      DiiRoutes.manageBooks),

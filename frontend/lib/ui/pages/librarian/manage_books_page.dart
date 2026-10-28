@@ -799,6 +799,8 @@ class _BookEditorDialogState extends State<_BookEditorDialog> {
   final _author = TextEditingController();
   final _code = TextEditingController();
   final _isbn = TextEditingController();
+  // live-updates the barcode preview
+  final _previewTick = ValueNotifier<int>(0);
   final _cover = TextEditingController();
   final _pdf = TextEditingController();
   final _pages = TextEditingController();
@@ -834,6 +836,7 @@ class _BookEditorDialogState extends State<_BookEditorDialog> {
     _author.dispose();
     _code.dispose();
     _isbn.dispose();
+    _previewTick.dispose();
     _cover.dispose();
     _pdf.dispose();
     _pages.dispose();
@@ -1014,6 +1017,12 @@ class _BookEditorDialogState extends State<_BookEditorDialog> {
                       ],
                     ),
 
+                    const SizedBox(height: 16),
+                    _BarcodePreview(
+                      bookCode: _code.text,
+                      totalCopies: int.tryParse(_total.text) ?? 0,
+                    ),
+
                     const SizedBox(height: 18),
                     _sectionLabel('MEDIA & LINKS'),
                     const SizedBox(height: 10),
@@ -1120,4 +1129,199 @@ class _BookEditorDialogState extends State<_BookEditorDialog> {
       ),
     );
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Live barcode preview — shows generated copy codes CS-001-01 …
+// ═══════════════════════════════════════════════════════════════
+class _BarcodePreview extends StatelessWidget {
+  const _BarcodePreview({
+    required this.bookCode,
+    required this.totalCopies,
+  });
+
+  final String bookCode;
+  final int totalCopies;
+
+  @override
+  Widget build(BuildContext context) {
+    final code = bookCode.trim().toUpperCase();
+
+    // nothing to show until the librarian types a book code
+    if (code.isEmpty) return const SizedBox.shrink();
+
+    final count = totalCopies.clamp(0, 20);
+    if (count == 0) return const SizedBox.shrink();
+
+    // show up to 5 barcodes, wrap if needed
+    final show = count > 5 ? 5 : count;
+    final remaining = count - show;
+
+    final codes = List.generate(
+      show,
+      (i) => '$code-${(i + 1).toString().padLeft(2, '0')}',
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7DB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: DiiColors.yellow.withValues(alpha: 0.75)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: DiiColors.yellow,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: const Icon(Icons.qr_code_2_rounded,
+                    size: 14, color: DiiColors.blue),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'BARCODE PREVIEW',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: DiiColors.blue,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+              Text(
+                '$count ${count == 1 ? "copy" : "copies"}',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: DiiColors.blue.withValues(alpha: 0.75),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'These will be assigned to each physical copy',
+            style: TextStyle(
+              fontSize: 10.5,
+              color: DiiColors.textSecondary.withValues(alpha: 0.9),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 12,
+            children: [
+              for (final c in codes) _BarcodeTile(code: c),
+            ],
+          ),
+          if (remaining > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.more_horiz_rounded,
+                    size: 14, color: DiiColors.blue),
+                const SizedBox(width: 6),
+                Text(
+                  '+ $remaining more ${remaining == 1 ? "copy" : "copies"} will be generated',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    color: DiiColors.blue.withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BarcodeTile extends StatelessWidget {
+  const _BarcodeTile({required this.code});
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: DiiColors.blue.withValues(alpha: 0.15),
+            ),
+          ),
+          child: SizedBox(
+            width: 108,
+            height: 40,
+            child: CustomPaint(
+              painter: _BarcodePainter(code),
+              size: const Size(108, 40),
+            ),
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          code,
+          style: GoogleFonts.inter(
+            fontSize: 9.5,
+            fontWeight: FontWeight.w800,
+            color: DiiColors.blue,
+            letterSpacing: 0.4,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BarcodePainter extends CustomPainter {
+  _BarcodePainter(this.code);
+  final String code;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.black;
+    // deterministic: use character codes of the string
+    final bytes = code.codeUnits;
+    int x = 2;
+    int i = 0;
+    while (x < size.width - 2) {
+      final c = bytes[i % bytes.length];
+      final wide = (c + i) % 3 == 0;
+      final w = wide ? 3.0 : 1.5;
+      canvas.drawRect(
+        Rect.fromLTWH(x.toDouble(), 0, w, size.height - 10),
+        paint,
+      );
+      final gap = 1.5 + ((c + i) % 3).toDouble();
+      x += (w + gap).ceil();
+      i++;
+      if (i > 200) break;
+    }
+    final line = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1;
+    canvas.drawLine(
+      Offset(0, size.height - 6),
+      Offset(size.width, size.height - 6),
+      line,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarcodePainter old) => old.code != code;
 }
